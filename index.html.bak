@@ -8,7 +8,7 @@
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 
-    <title>Hello, world!</title>
+    <title> CuteKernel </title>
   </head>
   <body>
     
@@ -31,19 +31,13 @@
       </li>
       <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-          Cybersecurity Artwork
+          Cybersecurity Illustrations
         </a>
         <div class="dropdown-menu" aria-labelledby="navbarDropdown">
           <a class="dropdown-item" href="#">United Women in Cyber 2021 Summit</a>
-          <div class="dropdown-divider"></div>
-          <a class="dropdown-item disabled" href="#">Education</a>
-          <div class="dropdown-divider"></div>
-          <a class="dropdown-item disabled" href="#">Miscellaneous</a>
         </div>
       </li>
-      <li class="nav-item">
-        <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
-      </li>
+
     </ul>
 
   </div>
