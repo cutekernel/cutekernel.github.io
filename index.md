@@ -1,6 +1,6 @@
 # Welcome to cutekernel.github.io
 
-<p>[Technical Illustrations](https://cutekernel.github.io/technical-illustrations/)</p>
+<p href="https://cutekernel.github.io/technical-illustrations/"> Illustrations</p>
 <p> Loading ... </p>
 
 
