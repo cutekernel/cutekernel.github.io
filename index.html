@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber Space</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        .rss-feed {
+            margin: 3rem 0;
+            max-width: 100%;
+            overflow: hidden;
+        }
+
+        .rss-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding: 0 1rem;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .rss-icon {
+            color: var(--accent);
+            margin-right: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .rss-mosaic {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            padding: 1rem;
+            max-height: 70vh;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary) var(--bg);
+        }
+
+        .rss-card {
+            background: rgba(10, 10, 10, 0.8);
+            border: 1px solid var(--primary);
+            border-radius: 8px;
+            padding: 1rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            min-height: 200px;
+        }
+
+        .rss-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(106, 27, 154, 0.3);
+        }
+
+        .rss-card-image {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            border: 1px solid var(--primary);
+        }
+
+        .rss-card-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .rss-card h3 {
+            color: var(--accent);
+            margin: 0 0 0.5rem 0;
+            font-size: 1.1rem;
+            line-height: 1.4;
+        }
+
+        .rss-card p {
+            color: var(--text);
+            font-size: 0.9rem;
+            margin: 0 0 1rem 0;
+            flex: 1;
+            line-height: 1.4;
+        }
+
+        .rss-card .date {
+            color: var(--primary-light);
+            font-size: 0.8rem;
+            margin-top: auto;
+        }
+
+        .rss-card a {
+            color: var(--primary-light);
+            text-decoration: none;
+            transition: color 0.3s ease;
+            display: block;
+        }
+
+        .rss-card a:hover {
+            color: var(--accent);
+        }
+
+        .rss-card a:focus {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+        }
+
+        /* Scrollbar styling */
+        .rss-mosaic::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .rss-mosaic::-webkit-scrollbar-track {
+            background: var(--bg);
+        }
+
+        .rss-mosaic::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
+
+        .rss-mosaic::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-light);
+        }
+
+        /* Loading state */
+        .rss-loading {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            padding: 1rem;
+        }
+
+        .rss-loading-card {
+            background: rgba(10, 10, 10, 0.8);
+            border: 1px solid var(--primary);
+            border-radius: 8px;
+            padding: 1rem;
+            min-height: 200px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 0.8; }
+            100% { opacity: 0.6; }
+        }
+
+        /* Error state */
+        .rss-error {
+            text-align: center;
+            padding: 2rem;
+            color: var(--accent);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .rss-mosaic {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .rss-card {
+                min-height: 180px;
+            }
+
+            .rss-card-image {
+                height: 120px;
+            }
+
+            .rss-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .rss-search-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-badges {
+                margin-right: 0;
+                margin-bottom: 0.5rem;
+            }
+
+            .rss-search {
+                width: 100%;
+            }
+        }
+
+        /* Accessibility improvements */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+
+        .rss-search-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 0.5rem;
+            width: 100%;
+        }
+
+        .search-badges {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-right: 0.5rem;
+        }
+
+        .rss-search {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(10, 10, 10, 0.8);
+            border: 1px solid var(--primary);
+            border-radius: 4px;
+            padding: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .rss-search:focus-within {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px rgba(106, 27, 154, 0.2);
+        }
+
+        .search-input {
+            background: transparent;
+            border: none;
+            color: var(--text);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.9rem;
+            padding: 0.25rem 0.5rem;
+            min-width: 200px;
+            outline: none;
+            width: 100%;
+        }
+
+        .search-input::placeholder {
+            color: var(--primary-light);
+            opacity: 0.7;
+        }
+
+        .search-button {
+            background: var(--primary);
+            color: var(--text);
+            border: none;
+            padding: 0.25rem 0.75rem;
+            border-radius: 2px;
+            cursor: pointer;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .search-button:hover {
+            background: var(--accent);
+        }
+
+        .search-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .search-results {
+            color: var(--primary-light);
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+            text-align: right;
+        }
+
+        .search-highlight {
+            background: rgba(106, 27, 154, 0.3);
+            padding: 0 2px;
+            border-radius: 2px;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 2rem;
+            color: var(--primary-light);
+            font-style: italic;
+        }
+
+        .last-update {
+            color: var(--primary-light);
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+
+        .search-badge {
+            background: rgba(106, 27, 154, 0.2);
+            color: var(--accent);
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid var(--primary);
+        }
+
+        .search-badge:hover {
+            background: rgba(106, 27, 154, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .search-badge:active {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1 class="glitch" data-text="CYBERSPACE">CYBERSPACE</h1>
+            <div class="terminal">
+                <div class="terminal-header">
+                    <span class="terminal-title">root@cyberspace:~#</span>
+                    <a href="illustrations.html" class="nav-link">[illustrations]</a>
+                    <a href="tools.html" class="nav-link">[tools]</a>
+                </div>
+                <div class="terminal-content">
+                    <p class="typing">Welcome to the digital void...</p>
+                </div>
+            </div>
+        </header>
+        <main>
+            <div class="rss-feed">
+                <div class="rss-header">
+                    <h2>LIVE FEED</h2>
+                    <span class="last-update">Last update: <span id="lastUpdate">-</span></span>
+                    <div class="rss-search-container">
+                        <div class="search-badges">
+                            <span class="search-badge" onclick="setSearchTerm('artificial intelligence')">AI</span>
+                            <span class="search-badge" onclick="setSearchTerm('api')">API</span>
+                            <span class="search-badge" onclick="setSearchTerm('ransomware')">Ransomware</span>
+                        </div>
+                        <div class="rss-search">
+                            <input type="text" id="feedSearch" placeholder="Search articles..." class="search-input">
+                            <button onclick="filterFeed()" class="search-button">Search</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="rss-mosaic" id="rssItems">
+                    <div class="rss-card loading">
+                        <div class="loading-spinner"></div>
+                        <p>Loading latest security news...</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <footer>
+            <p class="matrix-text">01010100 01101000 01100101 00100000 01100111 01110010 01101001 01100100 00100000 01101001 01110011 00100000 01110111 01100001 01110100 01100011 01101000 01101001 01101110 01100111</p>
+        </footer>
+    </div>
+
+    <script>
+        const RSS_URL = 'https://feeds.feedburner.com/TheHackersNews?format=xml';
+        const REFRESH_INTERVAL = 5 * 60 * 1000; // 5 minutes
+        let lastUpdate = null;
+        let allFeedItems = [];
+
+        function formatDate(dateString) {
+            try {
+                const date = new Date(dateString);
+                return date.toLocaleString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            } catch (e) {
+                console.error('Date parsing error:', e);
+                return 'Unknown date';
+            }
+        }
+
+        function updateLastUpdateTime() {
+            const lastUpdateElement = document.getElementById('lastUpdate');
+            if (lastUpdate) {
+                lastUpdateElement.textContent = formatDate(lastUpdate);
+            }
+        }
+
+        function parseRSS(xml) {
+            try {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(xml, 'text/xml');
+                    
+                const parserError = doc.querySelector('parsererror');
+                if (parserError) {
+                    throw new Error('Invalid XML format');
+                }
+
+                const items = doc.querySelectorAll('item');
+                const rssItems = document.getElementById('rssItems');
+                
+                if (items.length === 0) {
+                    throw new Error('No items found in feed');
+                }
+                
+                allFeedItems = [];
+                items.forEach(item => {
+                    try {
+                        const title = item.querySelector('title')?.textContent || 'Untitled';
+                        const link = item.querySelector('link')?.textContent || '#';
+                        const pubDate = item.querySelector('pubDate')?.textContent || new Date().toISOString();
+                        const description = item.querySelector('description')?.textContent || '';
+                        const enclosure = item.querySelector('enclosure');
+                        const imageUrl = enclosure ? enclosure.getAttribute('url') : null;
+
+                        allFeedItems.push({
+                            title,
+                            link,
+                            description,
+                            pubDate,
+                            imageUrl
+                        });
+                    } catch (itemError) {
+                        console.error('Error processing feed item:', itemError);
+                    }
+                });
+
+                displayFeedItems(allFeedItems);
+            } catch (parseError) {
+                console.error('RSS parsing error:', parseError);
+                throw parseError;
+            }
+        }
+
+        function normalizeText(text) {
+            return text
+                .toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
+                .replace(/[^\w\s]/g, ' ') // Replace special chars with space
+                .replace(/\s+/g, ' ') // Normalize whitespace
+                .trim();
+        }
+
+        function highlightText(text, searchTerm) {
+            if (!searchTerm) return text;
+            
+            const normalizedText = normalizeText(text);
+            const normalizedSearch = normalizeText(searchTerm);
+            
+            if (!normalizedText.includes(normalizedSearch)) return text;
+            
+            const regex = new RegExp(`(${searchTerm})`, 'gi');
+            return text.replace(regex, '<span class="search-highlight">$1</span>');
+        }
+
+        function filterFeed() {
+            const searchTerm = document.getElementById('feedSearch').value.trim();
+            const searchButton = document.querySelector('.search-button');
+            const rssItems = document.getElementById('rssItems');
+            
+            // Disable search button if input is empty
+            searchButton.disabled = !searchTerm;
+            
+            if (!searchTerm) {
+                displayFeedItems(allFeedItems);
+                return;
+            }
+
+            const normalizedSearch = normalizeText(searchTerm);
+            const searchTerms = normalizedSearch.split(/\s+/); // Split into words
+            
+            const filteredItems = allFeedItems.filter(item => {
+                const normalizedTitle = normalizeText(item.title);
+                const normalizedDesc = normalizeText(item.description);
+                
+                // Check if all search terms are present in either title or description
+                return searchTerms.every(term => 
+                    normalizedTitle.includes(term) || 
+                    normalizedDesc.includes(term)
+                );
+            });
+
+            if (filteredItems.length === 0) {
+                rssItems.innerHTML = `
+                    <div class="no-results">
+                        <p>No results found for "${searchTerm}"</p>
+                        <p>Try different keywords or check your spelling</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Display filtered items with highlighted search terms
+            displayFeedItems(filteredItems, searchTerm);
+        }
+
+        function displayFeedItems(items, searchTerm = '') {
+            const rssItems = document.getElementById('rssItems');
+            rssItems.innerHTML = '';
+
+            // Remove any existing search results counter
+            const existingCounter = document.querySelector('.search-results');
+            if (existingCounter) {
+                existingCounter.remove();
+            }
+
+            items.forEach(item => {
+                const rssCard = document.createElement('article');
+                rssCard.className = 'rss-card';
+                
+                const highlightedTitle = highlightText(item.title, searchTerm);
+                const highlightedDesc = highlightText(item.description, searchTerm);
+                
+                let cardContent = `
+                    <div class="rss-card-content">
+                        <h3><a href="${item.link}" target="_blank" rel="noopener noreferrer">${highlightedTitle}</a></h3>
+                        <p>${highlightedDesc.replace(/<[^>]*>/g, '').substring(0, 150)}...</p>
+                        <span class="date" aria-label="Published on">${formatDate(item.pubDate)}</span>
+                    </div>
+                `;
+                
+                if (item.imageUrl) {
+                    cardContent = `
+                        <img src="${item.imageUrl}" alt="" class="rss-card-image" loading="lazy">
+                        ${cardContent}
+                    `;
+                }
+                
+                rssCard.innerHTML = cardContent;
+                rssItems.appendChild(rssCard);
+            });
+
+            // Create and add the search results counter
+            const searchResults = document.createElement('div');
+            searchResults.className = 'search-results';
+            searchResults.textContent = `Showing ${items.length} of ${allFeedItems.length} results`;
+            rssItems.parentNode.insertBefore(searchResults, rssItems.nextSibling);
+        }
+
+        // Add event listener for Enter key in search
+        document.getElementById('feedSearch').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                filterFeed();
+            }
+        });
+
+        // Add event listener for input changes with debounce
+        let searchTimeout;
+        document.getElementById('feedSearch').addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                filterFeed();
+            }, 300); // 300ms debounce
+        });
+
+        // Add event listener for clear button
+        document.querySelector('.search-button').addEventListener('click', () => {
+            const searchInput = document.getElementById('feedSearch');
+            searchInput.value = '';
+            filterFeed();
+        });
+
+        async function fetchRSS() {
+            try {
+                // Try multiple CORS proxies
+                const proxies = [
+                    'https://api.allorigins.win/get?url=',
+                    'https://cors-anywhere.herokuapp.com/',
+                    'https://api.codetabs.com/v1/proxy?quest='
+                ];
+
+                let response;
+                let lastError;
+
+                for (const proxy of proxies) {
+                    try {
+                        response = await fetch(`${proxy}${encodeURIComponent(RSS_URL)}`);
+                        if (response.ok) {
+                            break;
+                        }
+                    } catch (error) {
+                        lastError = error;
+                        continue;
+                    }
+                }
+
+                if (!response || !response.ok) {
+                    throw lastError || new Error('Failed to fetch RSS feed');
+                }
+
+                const data = await response.json();
+                const xml = data.contents || data;
+                
+                parseRSS(xml);
+                lastUpdate = new Date();
+                updateLastUpdateTime();
+            } catch (error) {
+                console.error('Error fetching RSS feed:', error);
+                const rssItems = document.getElementById('rssItems');
+                rssItems.innerHTML = `
+                    <div class="rss-item">
+                        <h3>Error Loading Feed</h3>
+                        <p>Failed to fetch latest security news. Please try again later.</p>
+                        <p class="error-details">Error: ${error.message}</p>
+                        <span class="date">[Error]</span>
+                    </div>
+                `;
+            }
+        }
+
+        // Initial fetch
+        fetchRSS();
+
+        // Auto-refresh
+        setInterval(fetchRSS, REFRESH_INTERVAL);
+
+        // Add refresh button functionality
+        document.querySelector('.rss-header').addEventListener('click', (e) => {
+            if (e.target.tagName === 'H2') {
+                fetchRSS();
+            }
+        });
+
+        function setSearchTerm(term) {
+            const searchInput = document.getElementById('feedSearch');
+            searchInput.value = term;
+            filterFeed();
+        }
+    </script>
+</body>
+</html> 

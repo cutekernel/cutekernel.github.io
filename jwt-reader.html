@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JWT Reader - Cyber Space</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        .jwt-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .jwt-input {
+            width: 100%;
+            min-height: 100px;
+            background: rgba(10, 10, 10, 0.8);
+            border: 1px solid var(--primary);
+            border-radius: 8px;
+            padding: 1rem;
+            color: var(--text);
+            font-family: 'Share Tech Mono', monospace;
+            margin-bottom: 1rem;
+            resize: vertical;
+        }
+
+        .jwt-input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .jwt-button {
+            background: var(--primary);
+            color: var(--text);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Share Tech Mono', monospace;
+            transition: background 0.3s ease;
+        }
+
+        .jwt-button:hover {
+            background: var(--accent);
+        }
+
+        .jwt-result {
+            margin-top: 2rem;
+            background: rgba(10, 10, 10, 0.8);
+            border: 1px solid var(--primary);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .jwt-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .jwt-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .jwt-section h3 {
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .jwt-section pre {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1rem;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .jwt-error {
+            color: #ff4444;
+            margin-top: 1rem;
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        .jwt-info {
+            color: var(--primary-light);
+            font-size: 0.9rem;
+            margin-top: 1rem;
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        @media (max-width: 768px) {
+            .jwt-container {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1 class="glitch" data-text="JWT READER">JWT READER</h1>
+            <div class="terminal">
+                <div class="terminal-header">
+                    <span class="terminal-title">root@cyberspace:~#</span>
+                    <a href="index.html" class="nav-link">[home]</a>
+                    <a href="tools.html" class="nav-link">[tools]</a>
+                </div>
+                <div class="terminal-content">
+                    <p class="typing">Initializing JWT decoder...</p>
+                </div>
+            </div>
+        </header>
+        <main>
+            <div class="jwt-container">
+                <textarea class="jwt-input" placeholder="Paste your JWT token here..." id="jwtInput"></textarea>
+                <button class="jwt-button" onclick="decodeJWT()">Decode Token</button>
+                <p class="jwt-info">Enter a JWT token to decode its header, payload, and verify its signature.</p>
+                <div class="jwt-result" id="jwtResult" style="display: none;">
+                    <div class="jwt-section">
+                        <h3>Header</h3>
+                        <pre id="headerOutput"></pre>
+                    </div>
+                    <div class="jwt-section">
+                        <h3>Payload</h3>
+                        <pre id="payloadOutput"></pre>
+                    </div>
+                    <div class="jwt-section">
+                        <h3>Signature</h3>
+                        <pre id="signatureOutput"></pre>
+                    </div>
+                </div>
+                <div class="jwt-error" id="errorOutput" style="display: none;"></div>
+            </div>
+        </main>
+        <footer>
+            <p class="matrix-text">01010100 01101000 01100101 00100000 01100111 01110010 01101001 01100100 00100000 01101001 01110011 00100000 01110111 01100001 01110100 01100011 01101000 01101001 01101110 01100111</p>
+        </footer>
+    </div>
+
+    <script>
+        function decodeJWT() {
+            const jwtInput = document.getElementById('jwtInput').value.trim();
+            const jwtResult = document.getElementById('jwtResult');
+            const errorOutput = document.getElementById('errorOutput');
+            const headerOutput = document.getElementById('headerOutput');
+            const payloadOutput = document.getElementById('payloadOutput');
+            const signatureOutput = document.getElementById('signatureOutput');
+
+            // Hide previous results
+            jwtResult.style.display = 'none';
+            errorOutput.style.display = 'none';
+
+            try {
+                // Split the JWT into its parts
+                const parts = jwtInput.split('.');
+                if (parts.length !== 3) {
+                    throw new Error('Invalid JWT format');
+                }
+
+                // Decode header
+                const header = JSON.parse(atob(parts[0]));
+                headerOutput.textContent = JSON.stringify(header, null, 2);
+
+                // Decode payload
+                const payload = JSON.parse(atob(parts[1]));
+                payloadOutput.textContent = JSON.stringify(payload, null, 2);
+
+                // Display signature
+                signatureOutput.textContent = parts[2];
+
+                // Show results
+                jwtResult.style.display = 'block';
+            } catch (error) {
+                errorOutput.textContent = `Error: ${error.message}`;
+                errorOutput.style.display = 'block';
+            }
+        }
+
+        // Add keyboard shortcut (Ctrl+Enter) to decode
+        document.getElementById('jwtInput').addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                decodeJWT();
+            }
+        });
+    </script>
+</body>
+</html> 

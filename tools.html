@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tools - Cyber Space</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        .tools-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .tool-category {
+            background: rgba(10, 10, 10, 0.8);
+            border: 1px solid var(--primary);
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+
+        .tool-category h2 {
+            color: var(--accent);
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+            border-bottom: 1px solid var(--primary);
+            padding-bottom: 0.5rem;
+        }
+
+        .tool-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .tool-item {
+            margin-bottom: 1rem;
+        }
+
+        .tool-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .tool-link {
+            display: flex;
+            align-items: center;
+            color: var(--text);
+            text-decoration: none;
+            padding: 0.5rem;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .tool-link:hover {
+            background: rgba(106, 27, 154, 0.1);
+            color: var(--accent);
+            transform: translateX(5px);
+        }
+
+        .tool-icon {
+            margin-right: 0.75rem;
+            font-size: 1.2rem;
+            color: var(--primary-light);
+        }
+
+        .tool-description {
+            font-size: 0.9rem;
+            color: var(--primary-light);
+            margin-top: 0.25rem;
+            margin-left: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .tools-container {
+                grid-template-columns: 1fr;
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1 class="glitch" data-text="TOOLS">TOOLS</h1>
+            <div class="terminal">
+                <div class="terminal-header">
+                    <span class="terminal-title">root@cyberspace:~#</span>
+                    <a href="index.html" class="nav-link">[home]</a>
+                    <a href="illustrations.html" class="nav-link">[illustrations]</a>
+                </div>
+                <div class="terminal-content">
+                    <p class="typing">Accessing tool repository...</p>
+                </div>
+            </div>
+        </header>
+        <main>
+            <div class="tools-container">
+                <div class="tool-category">
+                    <h2>Security Tools</h2>
+                    <ul class="tool-list">
+                        <li class="tool-item">
+                            <a href="jwt-reader.html" class="tool-link">
+                                <span class="tool-icon">🔑</span>
+                                <span>JWT Reader</span>
+                            </a>
+                            <p class="tool-description">Decode and analyze JSON Web Tokens</p>
+                        </li>
+                        <li class="tool-item">
+                            <a href="url-encoder.html" class="tool-link">
+                                <span class="tool-icon">🔗</span>
+                                <span>URL Encoder/Decoder</span>
+                            </a>
+                            <p class="tool-description">Encode and decode URL components</p>
+                        </li>
+                        <li class="tool-item">
+                            <a href="json-checker.html" class="tool-link">
+                                <span class="tool-icon">📝</span>
+                                <span>JSON Syntax Checker</span>
+                            </a>
+                            <p class="tool-description">Validate and format JSON data</p>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </main>
+        <footer>
+            <p class="matrix-text">01010100 01101000 01100101 00100000 01100111 01110010 01101001 01100100 00100000 01101001 01110011 00100000 01110111 01100001 01110100 01100011 01101000 01101001 01101110 01100111</p>
+        </footer>
+    </div>
+</body>
+</html> 

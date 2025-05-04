@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Breaches Gallery - Cyber Space</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .gallery-item {
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--primary);
+            border-radius: 4px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .gallery-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 20px rgba(106, 27, 154, 0.5);
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .gallery-item .overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(10, 10, 10, 0.8);
+            padding: 1rem;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .gallery-item:hover .overlay {
+            transform: translateY(0);
+        }
+
+        .gallery-item h3 {
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .gallery-item p {
+            color: var(--text);
+            font-size: 0.9rem;
+        }
+
+        .download-btn {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: var(--primary);
+            color: var(--text);
+            text-decoration: none;
+            border-radius: 4px;
+            margin-top: 0.5rem;
+            transition: background 0.3s ease;
+        }
+
+        .download-btn:hover {
+            background: var(--primary-light);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1 class="glitch" data-text="BREACHES GALLERY">BREACHES GALLERY</h1>
+            <div class="terminal">
+                <div class="terminal-header">
+                    <span class="terminal-title">root@cyberspace:~#</span>
+                    <a href="index.html" class="nav-link">[home]</a>
+                    <a href="illustrations.html" class="nav-link">[illustrations]</a>
+                </div>
+                <div class="terminal-content">
+                    <p class="typing">Loading breach analysis documents...</p>
+                </div>
+            </div>
+        </header>
+        <main>
+            <div class="gallery">
+                <div class="gallery-item">
+                    <img src="illustrations/breaches/WhisperGate2022.png" alt="WhisperGate 2022 Analysis">
+                    <div class="overlay">
+                        <h3>WhisperGate 2022</h3>
+                        <p>Analysis of the WhisperGate cyber attack and its impact</p>
+                        <a href="illustrations/breaches/WhisperGate2022.png" class="download-btn" download>Download PNG</a>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <img src="illustrations/breaches/Solarwinds_Supply_Chain_Compromise_2022.png" alt="SolarWinds Supply Chain Compromise">
+                    <div class="overlay">
+                        <h3>SolarWinds Supply Chain</h3>
+                        <p>Detailed analysis of the 2022 SolarWinds supply chain compromise</p>
+                        <a href="illustrations/breaches/Solarwinds_Supply_Chain_Compromise_2022.png" class="download-btn" download>Download PNG</a>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <footer>
+            <p class="matrix-text">01010100 01100101 01100011 01101000 01101110 01101001 01100011 01100001 01101100 00100000 01100100 01101111 01100011 01110101 01101101 01100101 01101110 01110100 01100001 01110100 01101001 01101111 01101110</p>
+        </footer>
+    </div>
+</body>
+</html> 
