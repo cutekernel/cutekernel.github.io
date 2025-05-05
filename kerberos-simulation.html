@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kerberos Authentication Simulation - Cyber Space</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        .simulation-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            gap: 1rem;
+            min-height: 100vh;
+        }
+
+        /* Progress Sidebar */
+        .progress-sidebar {
+            background: rgba(10, 10, 10, 0.8);
+            border: 1px solid var(--primary);
+            border-radius: 6px;
+            padding: 1rem;
+            height: fit-content;
+            position: sticky;
+            top: 1rem;
+        }
+
+        .progress-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .progress-step {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            opacity: 0.5;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid transparent;
+            font-size: 0.9rem;
+        }
+
+        .progress-step span:first-child {
+            font-size: 1.2em;
+            min-width: 1.5rem;
+            text-align: center;
+        }
+
+        .progress-step span:last-child {
+            flex: 1;
+        }
+
+        .progress-step.active {
+            opacity: 1;
+            background: rgba(106, 27, 154, 0.2);
+            border-color: var(--primary);
+            transform: translateX(5px);
+        }
+
+        .progress-step.completed {
+            opacity: 1;
+            background: rgba(68, 255, 68, 0.1);
+            border-color: #44ff44;
+        }
+
+        .progress-step.completed::after {
+            content: "✅";
+            margin-left: auto;
+            opacity: 0.8;
+        }
+
+        .progress-step.locked {
+            cursor: not-allowed;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        /* Main Simulation Panel */
+        .simulation-main {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .kerberos-diagram {
+            background: rgba(10, 10, 10, 0.8);
+            border: 1px solid var(--primary);
+            border-radius: 6px;
+            padding: 1rem;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            position: relative;
+            min-height: 200px;
+        }
+
+        .kerberos-diagram::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                var(--primary) 10%, 
+                var(--primary) 90%, 
+                transparent 100%
+            );
+            opacity: 0.3;
+            z-index: 0;
+        }
+
+        .component-box {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--primary);
+            border-radius: 6px;
+            padding: 0.75rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            opacity: 0.5;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .component-box::before {
+            font-size: 1.5rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .component-box h3 {
+            margin: 0;
+            font-size: 0.9rem;
+            color: var(--accent);
+        }
+
+        .component-box.active {
+            opacity: 1;
+            box-shadow: 0 0 20px rgba(106, 27, 154, 0.3);
+            transform: translateY(-5px);
+        }
+
+        .component-box.active::after {
+            content: "";
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 10px solid var(--primary);
+            opacity: 0.5;
+        }
+
+        .component-box.client::before { content: "🧑"; }
+        .component-box.as::before { content: "🛡️"; }
+        .component-box.tgs::before { content: "🎟️"; }
+        .component-box.service::before { content: "🏷️"; }
+
+        /* Message Arrows */
+        .message-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 2rem;
+            height: 2rem;
+            background: var(--primary);
+            clip-path: polygon(0 0, 100% 50%, 0 100%);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 2;
+        }
+
+        .message-arrow.active {
+            opacity: 1;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.3; }
+            50% { opacity: 1; }
+            100% { opacity: 0.3; }
+        }
+
+        /* Instruction Panel */
+        .instruction-panel {
+            background: rgba(10, 10, 10, 0.8);
+            border: 1px solid var(--primary);
+            border-radius: 6px;
+            padding: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .instruction-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--primary);
+        }
+
+        .instruction-content {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 4px;
+            border-left: 2px solid var(--primary);
+            font-size: 0.9rem;
+        }
+
+        .instruction-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-group label {
+            font-size: 0.9rem;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .instruction-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--primary);
+        }
+
+        /* Log Panel */
+        .log-panel {
+            background: rgba(10, 10, 10, 0.8);
+            border: 1px solid var(--primary);
+            border-radius: 6px;
+            padding: 1rem;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 1rem;
+        }
+
+        .log-entry {
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            border-left: 2px solid var(--primary);
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 0.75rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+
+        .log-timestamp {
+            font-size: 0.75rem;
+        }
+
+        .log-content {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .log-message {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .log-message::before {
+            font-size: 1.2em;
+            opacity: 0.8;
+        }
+
+        .log-message.success::before { content: "✅"; }
+        .log-message.error::before { content: "❌"; }
+        .log-message.replay::before { content: "🔁"; }
+
+        .log-details {
+            font-size: 0.8rem;
+            margin-left: 1.5rem;
+            padding: 0.25rem;
+        }
+
+        /* Tooltips */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            width: 250px;
+            background-color: rgba(0, 0, 0, 0.9);
+            color: var(--text);
+            text-align: left;
+            border-radius: 6px;
+            padding: 1rem;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.9rem;
+            border: 1px solid var(--primary);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Inventory Panel */
+        .inventory-panel {
+            background: rgba(10, 10, 10, 0.8);
+            border: 1px solid var(--primary);
+            border-radius: 6px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .inventory-header {
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--primary);
+        }
+
+        .inventory-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .inventory-item {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--primary);
+            border-radius: 6px;
+            padding: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            opacity: 0;
+            transform: scale(0.8);
+            transition: all 0.5s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .inventory-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                45deg,
+                transparent,
+                rgba(106, 27, 154, 0.1),
+                transparent
+            );
+            transform: translateX(-100%);
+            transition: 0.5s;
+        }
+
+        .inventory-item.active {
+            opacity: 1;
+            transform: scale(1);
+            box-shadow: 0 0 10px rgba(106, 27, 154, 0.3);
+        }
+
+        .inventory-item.active::before {
+            transform: translateX(100%);
+        }
+
+        .inventory-item.tgt::before { content: "🎫"; }
+        .inventory-item.session-key::before { content: "🔑"; }
+        .inventory-item.service-ticket::before { content: "🏷️"; }
+
+        .inventory-item h4 {
+            margin: 0;
+            color: var(--accent);
+            font-size: 0.9rem;
+            transform: translateY(10px);
+            transition: transform 0.3s ease;
+        }
+
+        .inventory-item.active h4 {
+            transform: translateY(0);
+        }
+
+        .inventory-item p {
+            margin: 0;
+            font-size: 0.8rem;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s ease 0.2s;
+        }
+
+        .inventory-item.active p {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .simulation-container {
+                grid-template-columns: 1fr;
+            }
+
+            .progress-sidebar {
+                order: 2;
+                position: relative;
+                top: 0;
+            }
+
+            .kerberos-diagram {
+                grid-template-columns: repeat(2, 1fr);
+                grid-template-rows: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .kerberos-diagram {
+                grid-template-columns: 1fr;
+                grid-template-rows: repeat(4, 1fr);
+                gap: 0.75rem;
+                padding: 0.75rem;
+            }
+
+            .instruction-form {
+                grid-template-columns: 1fr;
+            }
+
+            .component-box {
+                padding: 0.5rem;
+            }
+
+            .component-box::before {
+                font-size: 1.25rem;
+            }
+        }
+
+        /* Add animation keyframes */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .inventory-item.active {
+            animation: pulse 1s ease-in-out;
+        }
+
+        /* Form Elements */
+        .form-group input,
+        .form-group select {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--primary);
+            color: var(--text);
+            padding: 0.5rem;
+            border-radius: 4px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 10px rgba(106, 27, 154, 0.3);
+            outline: none;
+        }
+
+        .form-group select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%236a1b9a' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.5rem center;
+            padding-right: 2rem;
+        }
+
+        /* Buttons */
+        .tutorial-button {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--primary);
+            color: var(--text);
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tutorial-button:hover {
+            background: rgba(106, 27, 154, 0.2);
+            border-color: var(--accent);
+            box-shadow: 0 0 10px rgba(106, 27, 154, 0.3);
+        }
+
+        .tutorial-button:active {
+            transform: translateY(1px);
+        }
+
+        .tutorial-button.retry {
+            background: rgba(255, 0, 0, 0.1);
+            border-color: #ff0000;
+            color: #ff4444;
+        }
+
+        .tutorial-button.retry:hover {
+            background: rgba(255, 0, 0, 0.2);
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
+        }
+
+        .tutorial-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(106, 27, 154, 0.2),
+                transparent
+            );
+            transition: 0.5s;
+        }
+
+        .tutorial-button:hover::before {
+            left: 100%;
+        }
+
+        /* Form Labels */
+        .form-group label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--accent);
+            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .form-group label::before {
+            content: '>';
+            color: var(--primary);
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        /* Placeholder Text */
+        .form-group input::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+            font-style: italic;
+        }
+
+        /* Disabled State */
+        .tutorial-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: rgba(0, 0, 0, 0.3);
+            border-color: rgba(106, 27, 154, 0.3);
+        }
+
+        /* Focus States */
+        .form-group input:focus::placeholder {
+            color: transparent;
+        }
+
+        /* Error State */
+        .form-group input.error,
+        .form-group select.error {
+            border-color: #ff0000;
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
+        }
+
+        /* Success State */
+        .form-group input.success,
+        .form-group select.success {
+            border-color: #44ff44;
+            box-shadow: 0 0 10px rgba(68, 255, 68, 0.3);
+        }
+
+        /* Add glow animation */
+        @keyframes glow {
+            0% { box-shadow: 0 0 5px rgba(106, 27, 154, 0.3); }
+            50% { box-shadow: 0 0 20px rgba(106, 27, 154, 0.5); }
+            100% { box-shadow: 0 0 5px rgba(106, 27, 154, 0.3); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1 class="glitch" data-text="KERBEROS SIMULATION">KERBEROS SIMULATION</h1>
+            <div class="terminal">
+                <div class="terminal-header">
+                    <span class="terminal-title">root@cyberspace:~#</span>
+                    <a href="index.html" class="nav-link">[home]</a>
+                    <a href="simulations.html" class="nav-link">[simulations]</a>
+                </div>
+                <div class="terminal-content">
+                    <p class="typing">Initializing Kerberos Authentication Simulation...</p>
+                </div>
+            </div>
+        </header>
+        <main>
+            <div class="simulation-container">
+                <!-- Progress Sidebar -->
+                <div class="progress-sidebar">
+                    <h3>Authentication Steps</h3>
+                    <div class="progress-steps">
+                        <div class="progress-step" data-step="1">
+                            <span>🔐</span>
+                            <span>Authentication Request</span>
+                        </div>
+                        <div class="progress-step" data-step="2">
+                            <span>🎫</span>
+                            <span>TGT Handling</span>
+                        </div>
+                        <div class="progress-step" data-step="3">
+                            <span>🚪</span>
+                            <span>TGS Ticket Request</span>
+                        </div>
+                        <div class="progress-step" data-step="4">
+                            <span>🧾</span>
+                            <span>Accessing Service</span>
+                        </div>
+                        <div class="progress-step" data-step="5">
+                            <span>🧪</span>
+                            <span>Explore & Test</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="simulation-main">
+                    <!-- Main Simulation Panel -->
+                    <div class="kerberos-diagram">
+                        <div class="component-box client" id="clientBox">
+                            <h3>Client</h3>
+                            <div class="tooltip">
+                                <span class="tooltip-text">The user or service requesting authentication</span>
+                            </div>
+                        </div>
+                        <div class="component-box as" id="asBox">
+                            <h3>Authentication Server</h3>
+                            <div class="tooltip">
+                                <span class="tooltip-text">Verifies user identity and issues TGTs</span>
+                            </div>
+                        </div>
+                        <div class="component-box tgs" id="tgsBox">
+                            <h3>Ticket Granting Server</h3>
+                            <div class="tooltip">
+                                <span class="tooltip-text">Issues service tickets using TGTs</span>
+                            </div>
+                        </div>
+                        <div class="component-box service" id="serviceBox">
+                            <h3>Service Server</h3>
+                            <div class="tooltip">
+                                <span class="tooltip-text">The target service being accessed</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Instruction Panel -->
+                    <div class="instruction-panel">
+                        <div class="instruction-header">
+                            <h3 id="instructionTitle">Welcome to Kerberos Authentication</h3>
+                            <button class="tutorial-button retry" id="retryButton">Reset Simulation</button>
+                        </div>
+                        <div class="instruction-content" id="instructionContent">
+                            Welcome to the Kerberos Authentication Simulation! This interactive tutorial will guide you through the core concepts of the Kerberos protocol.
+                        </div>
+                        <form class="instruction-form" id="instructionForm">
+                            <div class="form-group">
+                                <label for="username" class="tooltip">
+                                    Username
+                                    <span class="tooltip-text">Your unique identity in the Kerberos system</span>
+                                </label>
+                                <input type="text" id="username" name="username" placeholder="Enter username">
+                            </div>
+                            <div class="form-group">
+                                <label for="password" class="tooltip">
+                                    Password
+                                    <span class="tooltip-text">Used to derive your secret key</span>
+                                </label>
+                                <input type="password" id="password" name="password" placeholder="Enter password">
+                            </div>
+                            <div class="form-group">
+                                <label for="service" class="tooltip">
+                                    Target Service
+                                    <span class="tooltip-text">The service you want to access</span>
+                                </label>
+                                <select id="service" name="service">
+                                    <option value="print">Print Server</option>
+                                    <option value="file">File Server</option>
+                                    <option value="mail">Mail Server</option>
+                                </select>
+                            </div>
+                        </form>
+                        <div class="instruction-actions">
+                            <button class="tutorial-button" id="startTutorial">Start Tutorial</button>
+                        </div>
+                    </div>
+
+                    <!-- Log Panel -->
+                    <div class="log-panel" id="logPanel">
+                        <div class="log-entry">
+                            <div class="log-timestamp">[00:00:00]</div>
+                            <div class="log-content">
+                                <div class="log-message info">Welcome to the Kerberos Authentication Simulation</div>
+                                <div class="log-details">Click 'Start Tutorial' to begin your learning journey</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Inventory Panel -->
+                    <div class="inventory-panel">
+                        <div class="inventory-header">
+                            <h3>Authentication Items</h3>
+                        </div>
+                        <div class="inventory-items">
+                            <div class="inventory-item tgt" id="tgtItem">
+                                <h4>Ticket Granting Ticket</h4>
+                                <p>Not yet acquired</p>
+                            </div>
+                            <div class="inventory-item session-key" id="sessionKeyItem">
+                                <h4>Session Key</h4>
+                                <p>Not yet generated</p>
+                            </div>
+                            <div class="inventory-item service-ticket" id="serviceTicketItem">
+                                <h4>Service Ticket</h4>
+                                <p>Not yet acquired</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <footer>
+            <p class="matrix-text">01010100 01101000 01100101 00100000 01100111 01110010 01101001 01100100 00100000 01101001 01110011 00100000 01110111 01100001 01110100 01100011 01101000 01101001 01101110 01100111</p>
+        </footer>
+    </div>
+
+    <script>
+        // Simulation state
+        let currentStep = 0;
+        let principal = null;
+        let tgt = null;
+        let serviceTicket = null;
+        let sessionKey = null;
+
+        // DOM Elements
+        const progressSteps = document.querySelectorAll('.progress-step');
+        const clientBox = document.getElementById('clientBox');
+        const asBox = document.getElementById('asBox');
+        const tgsBox = document.getElementById('tgsBox');
+        const serviceBox = document.getElementById('serviceBox');
+        const instructionTitle = document.getElementById('instructionTitle');
+        const instructionContent = document.getElementById('instructionContent');
+        const instructionForm = document.getElementById('instructionForm');
+        const startTutorialBtn = document.getElementById('startTutorial');
+        const retryButton = document.getElementById('retryButton');
+        const logPanel = document.getElementById('logPanel');
+
+        // Tutorial steps
+        const tutorialSteps = [
+            {
+                title: "Welcome to Kerberos Authentication",
+                content: `
+                    <h4>What is Kerberos?</h4>
+                    <p>Kerberos is a network authentication protocol that provides secure authentication for client-server applications. It uses secret-key cryptography to prevent eavesdropping and replay attacks.</p>
+                    
+                    <h4>Key Concepts:</h4>
+                    <ul>
+                        <li><strong>Principals:</strong> Users or services that need to authenticate</li>
+                        <li><strong>Tickets:</strong> Encrypted credentials used for authentication</li>
+                        <li><strong>Session Keys:</strong> Temporary keys used for secure communication</li>
+                    </ul>
+                    
+                    <p>In this simulation, you'll learn how these components work together to provide secure authentication.</p>
+                `,
+                action: "startTutorial"
+            },
+            {
+                title: "Authentication Request",
+                content: `
+                    <h4>AS_REQ: Authentication Request</h4>
+                    <p>The first step in Kerberos authentication is the Authentication Request (AS_REQ). This is where you provide your credentials to the Authentication Server (AS).</p>
+                    
+                    <h4>What happens:</h4>
+                    <ul>
+                        <li>You send your username to the AS</li>
+                        <li>The AS looks up your secret key (derived from your password)</li>
+                        <li>The AS prepares a Ticket Granting Ticket (TGT)</li>
+                    </ul>
+                    
+                    <p>Enter your credentials below to initiate the authentication process.</p>
+                `,
+                action: "createPrincipal",
+                buttonText: "Send AS_REQ"
+            },
+            {
+                title: "TGT Handling",
+                content: `
+                    <h4>AS_REP: Authentication Response</h4>
+                    <p>The Authentication Server has verified your identity and issued a Ticket Granting Ticket (TGT).</p>
+                    
+                    <h4>What you received:</h4>
+                    <ul>
+                        <li><strong>TGT:</strong> Encrypted ticket containing your identity and session key</li>
+                        <li><strong>Session Key:</strong> A temporary key for secure communication with the TGS</li>
+                    </ul>
+                    
+                    <p>The TGT is encrypted with the TGS's secret key, so only the TGS can read it. This ensures the ticket's authenticity.</p>
+                `,
+                action: "authenticate",
+                buttonText: "Request TGT"
+            },
+            {
+                title: "TGS Ticket Request",
+                content: `
+                    <h4>TGS_REQ: Service Ticket Request</h4>
+                    <p>Now that you have a TGT, you can request access to specific services through the Ticket Granting Server (TGS).</p>
+                    
+                    <h4>What happens:</h4>
+                    <ul>
+                        <li>You present your TGT to the TGS</li>
+                        <li>The TGS verifies the TGT using its secret key</li>
+                        <li>The TGS issues a service ticket for your target service</li>
+                    </ul>
+                    
+                    <p>Select the service you want to access and request a service ticket.</p>
+                `,
+                action: "requestServiceTicket",
+                buttonText: "Send TGS_REQ"
+            },
+            {
+                title: "Service Access",
+                content: `
+                    <h4>AP_REQ: Service Access Request</h4>
+                    <p>You now have a service ticket that allows you to access your chosen service.</p>
+                    
+                    <h4>What happens:</h4>
+                    <ul>
+                        <li>You present your service ticket to the target service</li>
+                        <li>The service verifies the ticket using its secret key</li>
+                        <li>If valid, the service grants access and establishes a secure session</li>
+                    </ul>
+                    
+                    <p>This final step completes the Kerberos authentication process. The service ticket proves your identity and allows secure communication.</p>
+                `,
+                action: "accessService",
+                buttonText: "Send AP_REQ"
+            }
+        ];
+
+        // Update progress steps
+        function updateProgressSteps() {
+            progressSteps.forEach((step, index) => {
+                step.classList.remove('active', 'completed', 'locked');
+                if (index === currentStep) {
+                    step.classList.add('active');
+                } else if (index < currentStep) {
+                    step.classList.add('completed');
+                } else {
+                    step.classList.add('locked');
+                }
+            });
+        }
+
+        // Update component boxes
+        function updateComponentBoxes() {
+            const boxes = [clientBox, asBox, tgsBox, serviceBox];
+            boxes.forEach((box, index) => {
+                box.classList.remove('active');
+                if (index <= currentStep) {
+                    box.classList.add('active');
+                }
+            });
+        }
+
+        // Log messages
+        function log(message, type = 'info', details = '') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            
+            logEntry.innerHTML = `
+                <div class="log-timestamp">[${timestamp}]</div>
+                <div class="log-content">
+                    <div class="log-message ${type}">${message}</div>
+                    ${details ? `<div class="log-details">${details}</div>` : ''}
+                </div>
+            `;
+            
+            logPanel.appendChild(logEntry);
+            logPanel.scrollTop = logPanel.scrollHeight;
+        }
+
+        // Update inventory
+        function updateInventory() {
+            const tgtItem = document.getElementById('tgtItem');
+            const sessionKeyItem = document.getElementById('sessionKeyItem');
+            const serviceTicketItem = document.getElementById('serviceTicketItem');
+
+            // TGT Item
+            if (tgt) {
+                tgtItem.classList.add('active');
+                tgtItem.querySelector('p').textContent = tgt;
+                // Add a subtle glow effect
+                tgtItem.style.animation = 'glow 1s ease-in-out';
+                setTimeout(() => {
+                    tgtItem.style.animation = '';
+                }, 1000);
+            } else {
+                tgtItem.classList.remove('active');
+                tgtItem.querySelector('p').textContent = 'Not yet acquired';
+            }
+
+            // Session Key Item
+            if (sessionKey) {
+                sessionKeyItem.classList.add('active');
+                sessionKeyItem.querySelector('p').textContent = sessionKey;
+                // Add a subtle glow effect
+                sessionKeyItem.style.animation = 'glow 1s ease-in-out';
+                setTimeout(() => {
+                    sessionKeyItem.style.animation = '';
+                }, 1000);
+            } else {
+                sessionKeyItem.classList.remove('active');
+                sessionKeyItem.querySelector('p').textContent = 'Not yet generated';
+            }
+
+            // Service Ticket Item
+            if (serviceTicket) {
+                serviceTicketItem.classList.add('active');
+                serviceTicketItem.querySelector('p').textContent = serviceTicket;
+                // Add a subtle glow effect
+                serviceTicketItem.style.animation = 'glow 1s ease-in-out';
+                setTimeout(() => {
+                    serviceTicketItem.style.animation = '';
+                }, 1000);
+            } else {
+                serviceTicketItem.classList.remove('active');
+                serviceTicketItem.querySelector('p').textContent = 'Not yet acquired';
+            }
+        }
+
+        // Reset simulation
+        function resetSimulation() {
+            currentStep = 0;
+            principal = null;
+            tgt = null;
+            serviceTicket = null;
+            sessionKey = null;
+            
+            localStorage.removeItem('kerberosSimulationState');
+            
+            instructionForm.reset();
+            updateComponentBoxes();
+            updateProgressSteps();
+            updateInventory();
+            
+            logPanel.innerHTML = '';
+            log('Simulation reset to initial state', 'info');
+            log('Click "Start Tutorial" to begin', 'info');
+            
+            updateTutorial();
+        }
+
+        // Update tutorial
+        function updateTutorial() {
+            const step = tutorialSteps[currentStep];
+            instructionTitle.textContent = step.title;
+            instructionContent.innerHTML = step.content;
+            
+            // Add visual feedback for the current step
+            const currentComponent = document.querySelector(`.component-box:nth-child(${currentStep + 1})`);
+            if (currentComponent) {
+                currentComponent.classList.add('active');
+                currentComponent.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            
+            startTutorialBtn.textContent = step.buttonText || 'Next';
+            startTutorialBtn.onclick = () => handleTutorialAction(step.action);
+            
+            updateProgressSteps();
+            updateComponentBoxes();
+        }
+
+        // Handle tutorial actions
+        function handleTutorialAction(action) {
+            switch (action) {
+                case 'startTutorial':
+                    currentStep = 1;
+                    updateTutorial();
+                    log('Starting Kerberos authentication tutorial', 'info', 'Follow the steps to learn about the authentication process');
+                    break;
+                case 'createPrincipal':
+                    const username = document.getElementById('username').value;
+                    const password = document.getElementById('password').value;
+                    if (username && password) {
+                        principal = { username, password };
+                        log('AS_REQ sent', 'success', `Username: ${username}`);
+                        log('Authentication Server processing request...', 'info', 'Verifying credentials and preparing TGT');
+                        currentStep++;
+                        updateTutorial();
+                    } else {
+                        log('Please enter both username and password', 'error', 'Both fields are required for authentication');
+                    }
+                    break;
+                case 'authenticate':
+                    if (principal) {
+                        tgt = `TGT_${principal.username}`;
+                        sessionKey = `SK_${Math.random().toString(36).substr(2, 9)}`;
+                        
+                        // Animate and update inventory with delay
+                        setTimeout(() => {
+                            log('AS_REP received', 'success', `TGT: ${tgt}`);
+                            updateInventory();
+                        }, 500);
+                        
+                        setTimeout(() => {
+                            log('Session key generated', 'info', `Key: ${sessionKey}`);
+                            updateInventory();
+                        }, 1000);
+                        
+                        currentStep++;
+                        updateTutorial();
+                    }
+                    break;
+                case 'requestServiceTicket':
+                    if (tgt && sessionKey) {
+                        const service = document.getElementById('service').value;
+                        serviceTicket = `ST_${service}_${principal.username}`;
+                        
+                        // Animate and update inventory with delay
+                        setTimeout(() => {
+                            log('TGS_REP received', 'success', `Service: ${service}`);
+                            updateInventory();
+                        }, 500);
+                        
+                        setTimeout(() => {
+                            log('Service ticket generated', 'info', `Ticket: ${serviceTicket}`);
+                            updateInventory();
+                        }, 1000);
+                        
+                        currentStep++;
+                        updateTutorial();
+                    }
+                    break;
+                case 'accessService':
+                    if (serviceTicket) {
+                        log('AP_REQ successful', 'success', 'Service access granted');
+                        log('Secure session established', 'info', 'You can now communicate securely with the service');
+                        currentStep++;
+                        updateTutorial();
+                    }
+                    break;
+            }
+            saveState();
+        }
+
+        // Save state
+        function saveState() {
+            const state = {
+                currentStep,
+                principal,
+                tgt,
+                serviceTicket,
+                sessionKey
+            };
+            localStorage.setItem('kerberosSimulationState', JSON.stringify(state));
+        }
+
+        // Load state
+        function loadState() {
+            const savedState = localStorage.getItem('kerberosSimulationState');
+            if (savedState) {
+                const state = JSON.parse(savedState);
+                currentStep = state.currentStep;
+                principal = state.principal;
+                tgt = state.tgt;
+                serviceTicket = state.serviceTicket;
+                sessionKey = state.sessionKey;
+                
+                updateTutorial();
+                updateInventory();
+                log('Loaded previous simulation state', 'info');
+            }
+        }
+
+        // Initialize
+        loadState();
+        updateTutorial();
+        
+        // Add retry button event listener
+        retryButton.addEventListener('click', resetSimulation);
+    </script>
+</body>
+</html> 

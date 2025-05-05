@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webhook Recon - Cyber Space</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        .game-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .level-container {
+            background: rgba(10, 10, 10, 0.8);
+            border: 1px solid var(--primary);
+            border-radius: 8px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            display: none;
+        }
+
+        .level-container.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .level-title {
+            color: var(--accent);
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        .instructions {
+            color: var(--text);
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .context-box {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--primary);
+            border-radius: 4px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        .context-title {
+            color: var(--accent);
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .console {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--primary);
+            border-radius: 4px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            font-family: 'Share Tech Mono', monospace;
+            white-space: pre-wrap;
+            line-height: 1.4;
+        }
+
+        .console-line {
+            margin-bottom: 0.5rem;
+        }
+
+        .console-line.info {
+            color: #00ff00;
+        }
+
+        .console-line.debug {
+            color: #00ffff;
+        }
+
+        .console-line.error {
+            color: #ff0000;
+        }
+
+        .console-line.alert {
+            color: #ff4500;
+        }
+
+        .console-line.success {
+            color: #00ff00;
+        }
+
+        .input-area {
+            margin-bottom: 1.5rem;
+        }
+
+        .input-area input,
+        .input-area textarea {
+            width: 100%;
+            padding: 0.75rem;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--primary);
+            border-radius: 4px;
+            color: var(--text);
+            font-family: 'Share Tech Mono', monospace;
+            margin-bottom: 1rem;
+        }
+
+        .input-area textarea {
+            min-height: 150px;
+        }
+
+        .button {
+            background: var(--primary);
+            color: #000;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Share Tech Mono', monospace;
+            transition: background 0.3s ease;
+        }
+
+        .button:hover {
+            background: var(--accent);
+        }
+
+        .button.secondary {
+            background: rgba(106, 27, 154, 0.2);
+            border: 1px solid var(--primary);
+            color: var(--text);
+        }
+
+        .button.secondary:hover {
+            background: rgba(106, 27, 154, 0.4);
+        }
+
+        .response-panel {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--primary);
+            border-radius: 4px;
+            padding: 1rem;
+            margin-top: 1.5rem;
+            font-family: 'Share Tech Mono', monospace;
+            min-height: 100px;
+            display: none;
+        }
+
+        .response-panel.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .flag-banner {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 255, 0, 0.1);
+            border: 2px solid #00ff00;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            display: none;
+            z-index: 1000;
+        }
+
+        .flag-banner.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .flag-text {
+            color: #00ff00;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .close-flag {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        .progress-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .progress-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: rgba(106, 27, 154, 0.2);
+            border: 1px solid var(--primary);
+        }
+
+        .progress-dot.completed {
+            background: var(--primary);
+        }
+
+        .progress-dot.active {
+            background: var(--accent);
+        }
+
+        .hint-button {
+            background: rgba(106, 27, 154, 0.2);
+            border: 1px solid var(--primary);
+            color: var(--text);
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 1rem;
+            transition: background 0.3s ease;
+        }
+
+        .hint-button:hover {
+            background: rgba(106, 27, 154, 0.4);
+        }
+
+        .hint-panel {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--primary);
+            border-radius: 4px;
+            padding: 1rem;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .hint-panel.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .game-container {
+                padding: 1rem;
+            }
+
+            .level-container {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1 class="glitch" data-text="WEBHOOK RECON">WEBHOOK RECON</h1>
+            <div class="terminal">
+                <div class="terminal-header">
+                    <span class="terminal-title">root@cyberspace:~#</span>
+                    <a href="index.html" class="nav-link">[home]</a>
+                    <a href="simulations.html" class="nav-link">[simulations]</a>
+                </div>
+                <div class="terminal-content">
+                    <p class="typing">Loading webhook reconnaissance simulation...</p>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <div class="game-container">
+                <div class="progress-indicator">
+                    <div class="progress-dot active" data-level="1"></div>
+                    <div class="progress-dot" data-level="2"></div>
+                    <div class="progress-dot" data-level="3"></div>
+                </div>
+
+                <!-- Level 1: Discovery -->
+                <div class="level-container active" id="level1">
+                    <h2 class="level-title">Level 1: Find the Hidden Webhook</h2>
+                    <div class="context-box">
+                        <div class="context-title">Mission Context</div>
+                        <p>Our app uses webhook integrations for logging and notifications. An old integration might still be active in the frontend. Can you find it?</p>
+                    </div>
+                    
+                    <div class="console">
+                        <div class="console-line info">[INFO] Initializing webhook...</div>
+                        <div class="console-line debug">[DEBUG] Backup URL: 'aHR0cHM6Ly93ZWIuZXhhbXBsZS5jb20vYXBpL3NlbmQ='</div>
+                    </div>
+
+                    <div class="input-area">
+                        <button class="button secondary" onclick="decodeBase64()">Decode Base64</button>
+                        <input type="text" id="webhook-url" placeholder="Enter webhook URL to proceed">
+                        <button class="button" onclick="checkWebhookUrl()">Submit</button>
+                        <button class="hint-button" onclick="toggleHint('hint1')">Hint</button>
+                    </div>
+                    <div class="hint-panel" id="hint1">
+                        <p>The backup URL is base64 encoded. Decode it to reveal the webhook URL.</p>
+                    </div>
+                </div>
+
+                <!-- Level 2: Exploitation -->
+                <div class="level-container" id="level2">
+                    <h2 class="level-title">Level 2: Leak the Secrets</h2>
+                    <div class="context-box">
+                        <div class="context-title">Mission Context</div>
+                        <p>We suspect attackers could abuse this webhook to extract internal data. It shouldn't accept arbitrary input... but it might. Your goal is to leak a user database backup.</p>
+                    </div>
+                    
+                    <div class="console">
+                        <div class="console-line info">[INFO] Webhook endpoint active</div>
+                        <div class="console-line debug">[DEBUG] Action: dump_db available</div>
+                    </div>
+
+                    <div class="input-area">
+                        <textarea id="payload-input" placeholder='{
+  "action": "",
+  "data": ""
+}'></textarea>
+                        <button class="button" onclick="sendPayload()">Send Payload</button>
+                        <button class="hint-button" onclick="toggleHint('hint2')">Hint</button>
+                    </div>
+                    <div class="hint-panel" id="hint2">
+                        <p>Try using the 'dump_db' action mentioned in the debug log.</p>
+                    </div>
+                    <div class="response-panel" id="payload-response"></div>
+                </div>
+
+                <!-- Level 3: C2 Channel -->
+                <div class="level-container" id="level3">
+                    <h2 class="level-title">Level 3: Establish Remote Control</h2>
+                    <div class="context-box">
+                        <div class="context-title">Mission Context</div>
+                        <p>If attackers were using this webhook as a C2 channel, they'd want to avoid detection. Your job is to simulate a stealthy connection that downloads tools and executes commands.</p>
+                    </div>
+                    
+                    <div class="console">
+                        <div class="console-line info">[INFO] C2 channel initialized</div>
+                        <div class="console-line success">[OK] Beacon received. SessionToken: ABC123</div>
+                    </div>
+
+                    <div class="input-area">
+                        <textarea id="command-input" placeholder='{
+  "token": "ABC123",
+  "cmd": ""
+}'></textarea>
+                        <button class="button" onclick="sendCommand()">Execute Command</button>
+                        <button class="hint-button" onclick="toggleHint('hint3')">Hint</button>
+                    </div>
+                    <div class="hint-panel" id="hint3">
+                        <p>Try using stealth commands like 'download_toolkit' or 'exec_scan'. Remember to include the session token and wait between commands.</p>
+                    </div>
+                    <div class="response-panel" id="command-response"></div>
+                </div>
+
+                <!-- Flag Banner -->
+                <div class="flag-banner" id="flag-banner">
+                    <div class="flag-text"></div>
+                    <button class="close-flag" onclick="closeFlagBanner()">Continue</button>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p class="matrix-text">01010100 01101000 01100101 00100000 01100111 01110010 01101001 01100100 00100000 01101001 01110011 00100000 01110111 01100001 01110100 01100011 01101000 01101001 01101110 01100111</p>
+        </footer>
+    </div>
+
+    <script>
+        let currentLevel = 1;
+        let lastCommandTime = 0;
+        const flags = {
+            level1: 'FLAG{WEBHOOK_DISCOVERED}',
+            level2: 'FLAG{DATA_EXFILTRATED}',
+            level3: 'FLAG{C2_CHANNEL_ESTABLISHED}'
+        };
+
+        function decodeBase64() {
+            const encoded = 'aHR0cHM6Ly93ZWIuZXhhbXBsZS5jb20vYXBpL3NlbmQ=';
+            const decoded = atob(encoded);
+            document.getElementById('webhook-url').value = decoded;
+        }
+
+        function toggleHint(hintId) {
+            const hint = document.getElementById(hintId);
+            hint.classList.toggle('active');
+        }
+
+        function checkWebhookUrl() {
+            const input = document.getElementById('webhook-url').value;
+            if (input === 'https://web.example.com/api/send') {
+                showFlag(flags.level1);
+                setTimeout(() => {
+                    advanceLevel(2);
+                }, 2000);
+            } else {
+                alert('Incorrect webhook URL. Try again.');
+            }
+        }
+
+        function sendPayload() {
+            const payload = document.getElementById('payload-input').value;
+            try {
+                const parsed = JSON.parse(payload);
+                const responsePanel = document.getElementById('payload-response');
+                
+                if (parsed.action === 'dump_db') {
+                    responsePanel.innerHTML = `<div class="console-line success">{ "status": "success", "leaked_data": "user1,user2,admin..." }</div>`;
+                    responsePanel.classList.add('active');
+                    showFlag(flags.level2);
+                    setTimeout(() => {
+                        advanceLevel(3);
+                    }, 2000);
+                } else {
+                    responsePanel.innerHTML = `<div class="console-line error">{ "status": "error", "message": "unknown action" }</div>`;
+                    responsePanel.classList.add('active');
+                }
+            } catch (e) {
+                alert('Invalid JSON payload. Try again.');
+            }
+        }
+
+        function sendCommand() {
+            const now = Date.now();
+            if (now - lastCommandTime < 2000) {
+                const responsePanel = document.getElementById('command-response');
+                responsePanel.innerHTML = `<div class="console-line alert">[ALERT] Too many requests. Wait 2 seconds between commands.</div>`;
+                responsePanel.classList.add('active');
+                return;
+            }
+
+            const command = document.getElementById('command-input').value;
+            try {
+                const parsed = JSON.parse(command);
+                const responsePanel = document.getElementById('command-response');
+                
+                if (!parsed.token || parsed.token !== 'ABC123') {
+                    responsePanel.innerHTML = `<div class="console-line error">[ERROR] Invalid or missing session token</div>`;
+                    responsePanel.classList.add('active');
+                    return;
+                }
+
+                const stealthCommands = ['download_toolkit', 'exec_scan', 'exfil_config'];
+                const suspiciousCommands = ['delete_logs', 'format_disk', 'shutdown'];
+
+                if (suspiciousCommands.includes(parsed.cmd)) {
+                    responsePanel.innerHTML = `<div class="console-line alert">[ALERT] Suspicious command detected. Session terminated.</div>`;
+                    responsePanel.classList.add('active');
+                    return;
+                }
+
+                if (stealthCommands.includes(parsed.cmd)) {
+                    responsePanel.innerHTML = `<div class="console-line success">[SUCCESS] ${parsed.cmd} completed successfully.</div>`;
+                    responsePanel.classList.add('active');
+                    
+                    if (parsed.cmd === 'download_toolkit' || parsed.cmd === 'exec_scan') {
+                        showFlag(flags.level3);
+                    }
+                } else {
+                    responsePanel.innerHTML = `<div class="console-line error">[ERROR] Unknown command: ${parsed.cmd}</div>`;
+                    responsePanel.classList.add('active');
+                }
+
+                lastCommandTime = now;
+            } catch (e) {
+                alert('Invalid command format. Try again.');
+            }
+        }
+
+        function showFlag(flag) {
+            const banner = document.getElementById('flag-banner');
+            const flagText = document.querySelector('.flag-text');
+            flagText.textContent = `Flag Earned: ${flag}`;
+            banner.classList.add('active');
+        }
+
+        function closeFlagBanner() {
+            const banner = document.getElementById('flag-banner');
+            banner.classList.remove('active');
+        }
+
+        function advanceLevel(level) {
+            document.querySelector(`.level-container.active`).classList.remove('active');
+            document.getElementById(`level${level}`).classList.add('active');
+            
+            document.querySelector('.progress-dot.active').classList.remove('active');
+            document.querySelector(`.progress-dot[data-level="${level}"]`).classList.add('active');
+            document.querySelector(`.progress-dot[data-level="${level-1}"]`).classList.add('completed');
+            
+            currentLevel = level;
+        }
+    </script>
+</body>
+</html> 

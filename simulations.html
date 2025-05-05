@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulations - Cyber Space</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        .simulations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .simulation-card {
+            background: rgba(10, 10, 10, 0.8);
+            border: 1px solid var(--primary);
+            border-radius: 8px;
+            padding: 1.5rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            min-height: 200px;
+        }
+
+        .simulation-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(106, 27, 154, 0.3);
+        }
+
+        .simulation-card h3 {
+            color: var(--accent);
+            margin: 0 0 1rem 0;
+            font-size: 1.2rem;
+        }
+
+        .simulation-card p {
+            color: var(--text);
+            margin: 0 0 1.5rem 0;
+            flex: 1;
+        }
+
+        .simulation-link {
+            display: inline-block;
+            background: var(--primary);
+            color: var(--text);
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            text-decoration: none;
+            transition: background 0.3s ease;
+            text-align: center;
+        }
+
+        .simulation-link:hover {
+            background: var(--accent);
+        }
+
+        .simulation-tags {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .simulation-tag {
+            background: rgba(106, 27, 154, 0.2);
+            color: var(--accent);
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.8rem;
+            border: 1px solid var(--primary);
+        }
+
+        @media (max-width: 768px) {
+            .simulations-grid {
+                grid-template-columns: 1fr;
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1 class="glitch" data-text="SIMULATIONS">SIMULATIONS</h1>
+            <div class="terminal">
+                <div class="terminal-header">
+                    <span class="terminal-title">root@cyberspace:~#</span>
+                    <a href="index.html" class="nav-link">[home]</a>
+                    <a href="illustrations.html" class="nav-link">[illustrations]</a>
+                    <a href="tools.html" class="nav-link">[tools]</a>
+                </div>
+                <div class="terminal-content">
+                    <p class="typing">Loading simulation matrix...</p>
+                </div>
+            </div>
+        </header>
+        <main>
+            <div class="simulations-grid">
+                <div class="simulation-card">
+                    <h3>Interactive MCP Server Simulation</h3>
+                    <div class="simulation-tags">
+                        <span class="simulation-tag">Educational</span>
+                        <span class="simulation-tag">Interactive</span>
+                    </div>
+                    <p>Learn how to configure and use a Model Context Protocol (MCP) server through this interactive simulation. Configure server settings, create models and context providers, and experiment with different binding configurations.</p>
+                    <a href="mcp-simulation.html" class="simulation-link">Launch Simulation</a>
+                </div>
+
+                <div class="simulation-card">
+                    <h3>Kerberos Authentication Simulation</h3>
+                    <div class="simulation-tags">
+                        <span class="simulation-tag">Security</span>
+                        <span class="simulation-tag">Authentication</span>
+                        <span class="simulation-tag">Interactive</span>
+                    </div>
+                    <p>Master the Kerberos authentication protocol through this step-by-step simulation. Learn about principals, tickets, and secure message exchanges while interacting with each component of the Kerberos system.</p>
+                    <a href="kerberos-simulation.html" class="simulation-link">Launch Simulation</a>
+                </div>
+
+                <div class="simulation-card">
+                    <h3>Webhook Recon</h3>
+                    <div class="simulation-tags">
+                        <span class="simulation-tag">Security</span>
+                        <span class="simulation-tag">Red Team</span>
+                        <span class="simulation-tag">Interactive</span>
+                    </div>
+                    <p>Step into the role of a red team operator and learn how to identify, exploit, and establish command and control through insecure webhooks. Master webhook reconnaissance, payload crafting, and persistence techniques in this interactive simulation.</p>
+                    <a href="webhook-recon.html" class="simulation-link">Launch Simulation</a>
+                </div>
+            </div>
+        </main>
+        <footer>
+            <p class="matrix-text">01010100 01101000 01100101 00100000 01100111 01110010 01101001 01100100 00100000 01101001 01110011 00100000 01110111 01100001 01110100 01100011 01101000 01101001 01101110 01100111</p>
+        </footer>
+    </div>
+</body>
+</html> 
