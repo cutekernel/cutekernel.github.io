@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSH Tunnel Tycoon - Cyber Space</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        .game-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .game-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .game-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+        }
+
+        .mission-area {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #00ff00;
+            padding: 1rem;
+            border-radius: 5px;
+        }
+
+        .stats-panel {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #00ff00;
+            padding: 1rem;
+            border-radius: 5px;
+        }
+
+        .phase {
+            margin-bottom: 2rem;
+            padding: 1rem;
+            border: 1px solid #00ff00;
+            border-radius: 5px;
+        }
+
+        .mission {
+            margin: 1rem 0;
+            padding: 1rem;
+            background: rgba(0, 255, 0, 0.1);
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .mission:hover {
+            background: rgba(0, 255, 0, 0.2);
+        }
+
+        .mission.completed {
+            background: rgba(0, 255, 0, 0.2);
+            border: 1px solid #00ff00;
+            position: relative;
+        }
+
+        .mission.completed::after {
+            content: "✓";
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: #00ff00;
+            font-size: 1.2em;
+        }
+
+        .mission.completed:hover {
+            background: rgba(0, 255, 0, 0.3);
+        }
+
+        .mission.locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px solid #ff0000;
+        }
+
+        .mission.locked::after {
+            content: "🔒";
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: #ff0000;
+        }
+
+        .mission.unlocked {
+            animation: unlock 1s ease-out;
+        }
+
+        @keyframes unlock {
+            0% {
+                transform: scale(1);
+                opacity: 0.5;
+            }
+            50% {
+                transform: scale(1.1);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .terminal-input {
+            width: 100%;
+            background: #000;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            padding: 0.5rem;
+            font-family: 'Share Tech Mono', monospace;
+            margin-top: 1rem;
+        }
+
+        .mission-dialog {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.95);
+            border: 1px solid #00ff00;
+            padding: 2rem;
+            border-radius: 5px;
+            z-index: 1000;
+            max-width: 600px;
+            width: 90%;
+        }
+
+        .mission-dialog h3 {
+            color: #00ff00;
+            margin-top: 0;
+        }
+
+        .mission-dialog .hint {
+            background: rgba(0, 255, 0, 0.1);
+            padding: 1rem;
+            border-radius: 3px;
+            margin: 1rem 0;
+        }
+
+        .mission-dialog .terminal-output {
+            background: #000;
+            color: #00ff00;
+            padding: 1rem;
+            border-radius: 3px;
+            margin: 1rem 0;
+            font-family: 'Share Tech Mono', monospace;
+            min-height: 100px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .mission-dialog .interactive-hint {
+            display: none;
+            background: rgba(0, 255, 0, 0.05);
+            border: 1px solid #00ff00;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .mission-dialog .interactive-hint:hover {
+            background: rgba(0, 255, 0, 0.1);
+        }
+
+        .mission-dialog .hint-button {
+            background: none;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            padding: 0.5rem 1rem;
+            margin: 1rem 0;
+            cursor: pointer;
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        .mission-dialog .hint-button:hover {
+            background: rgba(0, 255, 0, 0.1);
+        }
+
+        .mission-dialog .command-history {
+            font-size: 0.8em;
+            color: #00ff00;
+            opacity: 0.7;
+            margin-top: 0.5rem;
+        }
+
+        .mission-dialog .close-btn {
+            background: none;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            float: right;
+        }
+
+        .mission-dialog .close-btn:hover {
+            background: rgba(0, 255, 0, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            .game-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1 class="glitch" data-text="SSH TUNNEL TYCOON">SSH TUNNEL TYCOON</h1>
+            <div class="terminal">
+                <div class="terminal-header">
+                    <span class="terminal-title">root@cyberspace:~#</span>
+                    <a href="index.html" class="nav-link">[home]</a>
+                    <a href="simulations.html" class="nav-link">[simulations]</a>
+                </div>
+            </div>
+        </header>
+        <main class="game-container">
+            <div class="game-header">
+                <h2>From Rookie to Elite Pentester</h2>
+                <p>Master the art of SSH tunneling through increasingly challenging missions</p>
+            </div>
+            <div class="game-content">
+                <div class="mission-area">
+                    <div class="phase">
+                        <h3>🌱 Phase 1: The Tutorial</h3>
+                        <div class="mission" data-mission-id="tutorial" onclick="startMission('tutorial')">
+                            <h4>Mission: Coffee Shop WiFi Hack</h4>
+                            <p>Learn the basics of SSH tunneling in a safe environment</p>
+                            <p>Reward: $500 + Freelancer's Toolkit</p>
+                        </div>
+                    </div>
+                    <div class="phase">
+                        <h3>🚀 Phase 2: Early Career</h3>
+                        <div class="mission" data-mission-id="library-firewall" onclick="startMission('library-firewall')">
+                            <h4>Mission: Library Firewall Bypass</h4>
+                            <p>Use ssh -L to access blocked sites</p>
+                            <p>Reward: $1,000</p>
+                        </div>
+                        <div class="mission" data-mission-id="cat-cafe" onclick="startMission('cat-cafe')">
+                            <h4>Mission: Cat Cafe's Secret Menu</h4>
+                            <p>Master ssh -R to expose local servers</p>
+                            <p>Reward: $1,500</p>
+                        </div>
+                    </div>
+                    <div class="phase">
+                        <h3>💼 Phase 3: Mid-Career</h3>
+                        <div class="mission" data-mission-id="hospital-paywall">
+                            <h4>Mission: Hospital Paywall Hack</h4>
+                            <p>Implement SOCKS proxy with ssh -D</p>
+                            <p>Reward: $5,000</p>
+                        </div>
+                    </div>
+                    <div class="phase">
+                        <h3>🔝 Phase 4: Elite Hacker</h3>
+                        <div class="mission locked">
+                            <h4>Mission: Bank Mainframe Infiltration</h4>
+                            <p>Advanced tunneling with custom exploit chain</p>
+                            <p>Reward: $10,000</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="stats-panel">
+                    <h3>Hacker Profile</h3>
+                    <div id="player-stats">
+                        <p>Alias: <span id="player-alias">Not Set</span></p>
+                        <p>Level: <span id="player-level">Rookie</span></p>
+                        <p>Credits: $<span id="player-credits">0</span></p>
+                        <p>Completed Missions: <span id="missions-completed">0</span></p>
+                    </div>
+                    <div class="terminal-input" id="command-input" contenteditable="true" placeholder="Enter your SSH command..."></div>
+                </div>
+            </div>
+        </main>
+        <footer>
+            <p class="matrix-text">01010100 01101000 01100101 00100000 01100111 01110010 01101001 01100100 00100000 01101001 01110011 00100000 01110111 01100001 01110100 01100011 01101000 01101001 01101110 01100111</p>
+        </footer>
+    </div>
+    <div class="mission-dialog" id="mission-dialog">
+        <button class="close-btn" onclick="closeMission()">×</button>
+        <h3 id="mission-title">Mission: Coffee Shop WiFi Hack</h3>
+        <div class="hint" id="mission-hint">
+            <p>Your first mission: Connect to the coffee shop's WiFi network using SSH tunneling.</p>
+            <p>Use the command: <code>ssh -L 8080:localhost:80 user@coffee-shop</code></p>
+        </div>
+        <div class="terminal-output" id="mission-output"></div>
+        <div class="terminal-input" id="mission-input" contenteditable="true" placeholder="Enter your SSH command..."></div>
+    </div>
+    <div id="completion-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.95); z-index:2000; align-items:center; justify-content:center;">
+        <div style="background:#111; border:2px solid #00ff00; border-radius:10px; padding:2rem; max-width:500px; margin:auto; text-align:center; color:#00ff00;">
+            <h2>🏆 Elite Hacker Achievement Unlocked!</h2>
+            <div id="completion-summary"></div>
+            <div style="margin:2rem 0;">
+                <img src="https://img.icons8.com/fluency/96/000000/trophy.png" alt="Trophy" style="width:80px; height:80px;"/>
+            </div>
+            <button onclick="resetGame()" style="background:none; border:1px solid #00ff00; color:#00ff00; padding:0.5rem 1rem; font-family:'Share Tech Mono', monospace; cursor:pointer;">Replay / Reset Progress</button>
+        </div>
+    </div>
+    <script>
+        // Game state
+        let gameState = {
+            alias: '',
+            level: 'Rookie',
+            credits: 0,
+            completedMissions: 0,
+            unlockedPhases: ['tutorial'],
+            currentMission: null,
+            completedMissionsList: []
+        };
+
+        // Mission data
+        const missions = {
+            tutorial: {
+                title: "Coffee Shop WiFi Hack",
+                description: "Learn the basics of SSH tunneling in a safe environment",
+                reward: 500,
+                steps: [
+                    {
+                        hint: "Imagine you're at a coffee shop, and there's a blocked website you want to visit. It's like having a wall between you and the website. We need to create a secret tunnel to get around this wall!",
+                        command: "ready",
+                        validCommands: ["ready", "start", "begin", "go"],
+                        practice: "Type 'ready' to begin building your tunnel",
+                        attempts: 0,
+                        progressiveHints: [
+                            "Just type 'ready' to start!",
+                            "Type the word 'ready' and press Enter",
+                            "The command is simply: ready"
+                        ]
+                    },
+                    {
+                        hint: "First, we need to find the coffee shop's server. The server is named 'coffee-shop' and has the IP address 192.168.1.100.\n\nLet's verify we can reach it. What command would you use to test if a server is reachable?",
+                        command: "ping coffee-shop",
+                        validCommands: [
+                            "ping coffee-shop",
+                            "ping 192.168.1.100",
+                            "ping -c 4 coffee-shop",
+                            "ping -c 4 192.168.1.100"
+                        ],
+                        practice: "Try to ping the coffee shop's server...",
+                        attempts: 0,
+                        progressiveHints: [
+                            "What command would you use to check if the coffee shop server (coffee-shop, 192.168.1.100) is reachable?",
+                            "The command starts with 'p' and is used to test network connectivity",
+                            "Try using the 'ping' command with the server name or IP"
+                        ]
+                    },
+                    {
+                        hint: "Great! Now let's check if the server is running SSH. We can use the 'nmap' command to scan for open ports.\n\nServer Details:\n- Name: coffee-shop\n- IP: 192.168.1.100\n- SSH Port: 22\n\nWhat command would you use to check if port 22 is open?",
+                        command: "nmap -p 22 coffee-shop",
+                        validCommands: [
+                            "nmap -p 22 coffee-shop",
+                            "nmap coffee-shop -p 22",
+                            "nmap -p 22 192.168.1.100",
+                            "nmap 192.168.1.100 -p 22",
+                            "nmap -p22 coffee-shop",
+                            "nmap coffee-shop -p22",
+                            "nmap -p22 192.168.1.100",
+                            "nmap 192.168.1.100 -p22"
+                        ],
+                        practice: "Try to scan the server for open ports...",
+                        attempts: 0,
+                        progressiveHints: [
+                            "What tool would you use to scan for open ports?",
+                            "The command starts with 'n' and is used for network scanning",
+                            "Try using 'nmap' to scan port 22 on the server"
+                        ]
+                    },
+                    {
+                        hint: "Perfect! Now we know the server is running SSH. Let's check if we have SSH installed on our system. How can you check if SSH is installed?",
+                        command: "ssh -V",
+                        validCommands: [
+                            "ssh -V",
+                            "ssh --version",
+                            "ssh -v",
+                            "ssh --v"
+                        ],
+                        practice: "Try to find the command that shows your SSH version...",
+                        attempts: 0,
+                        progressiveHints: [
+                            "What command would show you the version of a program?",
+                            "The command starts with 'ssh' and uses a flag to show version",
+                            "Try using 'ssh -V' to check the version"
+                        ]
+                    },
+                    {
+                        hint: "Now for the fun part! Let's create our tunnel.\n\nServer Details:\n- Name: coffee-shop\n- IP: 192.168.1.100\n- SSH Port: 22\n- Username: user\n\nThink about it:\n- You need a door on your side (a port on your computer)\n- You need to know where your friend lives (the target address)\n- You need to know which door to use at your friend's house (the target port)\n- You need permission to use the secret passage (your login credentials)\n\nCan you figure out how to combine these elements into an SSH command?",
+                        command: "ssh -L 8080:localhost:80 user@coffee-shop",
+                        validCommands: [
+                            "ssh -L 8080:localhost:80 user@coffee-shop",
+                            "ssh -L8080:localhost:80 user@coffee-shop",
+                            "ssh -L 8080:localhost:80 user@192.168.1.100",
+                            "ssh -L8080:localhost:80 user@192.168.1.100",
+                            "ssh user@coffee-shop -L 8080:localhost:80",
+                            "ssh user@192.168.1.100 -L 8080:localhost:80",
+                            "ssh user@coffee-shop -L8080:localhost:80",
+                            "ssh user@192.168.1.100 -L8080:localhost:80"
+                        ],
+                        practice: "Try to construct the SSH command using the -L flag...",
+                        attempts: 0,
+                        progressiveHints: [
+                            "Start with 'ssh -L' to create a local port forward",
+                            "Add your local port (8080) and the target (localhost:80)",
+                            "Finally, add your login credentials (user@coffee-shop)"
+                        ]
+                    }
+                ],
+                currentStep: 0
+            },
+            "library-firewall": {
+                title: "Library Firewall Bypass",
+                description: "Use SSH tunneling to access blocked websites",
+                reward: 1000,
+                steps: [
+                    {
+                        hint: "Welcome to the Library Firewall Bypass mission! The library has blocked access to certain websites, but you need to access one for research.\n\nServer Details:\n- Name: library-server\n- IP: 192.168.2.100\n- Username: student\n- Target Website: research-site.com:80",
+                        command: "ready",
+                        validCommands: ["ready", "start", "begin", "go"],
+                        practice: "Type 'ready' to begin the mission",
+                        attempts: 0,
+                        progressiveHints: [
+                            "Just type 'ready' to start!",
+                            "Type the word 'ready' and press Enter",
+                            "The command is simply: ready"
+                        ]
+                    },
+                    {
+                        hint: "First, let's check if we can reach the library server. We'll need to verify both the server and the target website are accessible.\n\nWhat command would you use to check if the library server is reachable?",
+                        command: "ping library-server",
+                        validCommands: [
+                            "ping library-server",
+                            "ping 192.168.2.100",
+                            "ping -c 4 library-server",
+                            "ping -c 4 192.168.2.100",
+                            "ping -n 4 library-server",
+                            "ping -n 4 192.168.2.100"
+                        ],
+                        practice: "Try to ping the library server...",
+                        attempts: 0,
+                        progressiveHints: [
+                            "What command would you use to check if the coffee shop server (library-server, 192.168.2.100) is reachable?",
+                            "The command starts with 'p' and is used to test network connectivity",
+                            "Try using the 'ping' command with the server name or IP"
+                        ]
+                    },
+                    {
+                        hint: "Now we need to check if the target website is accessible from the library server. We can use 'curl' to test this.\n\nWhat command would you use to check if the website is reachable from the server?",
+                        command: "ssh student@library-server 'curl -I research-site.com'",
+                        validCommands: [
+                            "ssh student@library-server 'curl -I research-site.com'",
+                            "ssh student@192.168.2.100 'curl -I research-site.com'",
+                            "ssh student@library-server 'curl --head research-site.com'",
+                            "ssh student@192.168.2.100 'curl --head research-site.com'",
+                            "ssh student@library-server 'curl -I http://research-site.com'",
+                            "ssh student@192.168.2.100 'curl -I http://research-site.com'",
+                            "ssh student@library-server 'curl --head http://research-site.com'",
+                            "ssh student@192.168.2.100 'curl --head http://research-site.com'"
+                        ],
+                        practice: "Try to check the website accessibility...",
+                        attempts: 0,
+                        progressiveHints: [
+                            "We need to run a command on the remote server",
+                            "Use SSH to execute a command remotely",
+                            "Try using 'curl' to check the website headers"
+                        ]
+                    },
+                    {
+                        hint: "Great! Now we know both the server and website are accessible. We need to create a local port forward to bypass the firewall.\n\nThink about it:\n- We need to forward a local port to the target website\n- The website is running on port 80\n- We'll use port 8080 locally\n- We need to connect through the library server\n\nCan you figure out the SSH command to create this tunnel?",
+                        command: "ssh -L 8080:research-site.com:80 student@library-server",
+                        validCommands: [
+                            "ssh -L 8080:research-site.com:80 student@library-server",
+                            "ssh -L8080:research-site.com:80 student@library-server",
+                            "ssh -L 8080:research-site.com:80 student@192.168.2.100",
+                            "ssh -L8080:research-site.com:80 student@192.168.2.100",
+                            "ssh student@library-server -L 8080:research-site.com:80",
+                            "ssh student@192.168.2.100 -L 8080:research-site.com:80",
+                            "ssh student@library-server -L8080:research-site.com:80",
+                            "ssh student@192.168.2.100 -L8080:research-site.com:80",
+                            "ssh -L 8080:http://research-site.com:80 student@library-server",
+                            "ssh -L8080:http://research-site.com:80 student@library-server",
+                            "ssh -L 8080:http://research-site.com:80 student@192.168.2.100",
+                            "ssh -L8080:http://research-site.com:80 student@192.168.2.100"
+                        ],
+                        practice: "Try to construct the SSH tunnel command...",
+                        attempts: 0,
+                        progressiveHints: [
+                            "Start with 'ssh -L' to create a local port forward",
+                            "Add your local port (8080) and the target (research-site.com:80)",
+                            "Finally, add your login credentials (student@library-server)"
+                        ]
+                    }
+                ],
+                currentStep: 0
+            },
+            "cat-cafe": {
+                title: "Cat Cafe's Secret Menu",
+                description: "Expose a local server to the internet using reverse tunneling",
+                reward: 1500,
+                steps: [
+                    {
+                        hint: "Welcome to the Cat Cafe mission! The cafe has a secret menu server running locally, but they want to make it accessible to their customers.\n\nServer Details:\n- Name: cat-cafe-server\n- IP: 192.168.3.100\n- Username: barista\n- Local Menu Server: localhost:3000",
+                        command: "ready",
+                        validCommands: ["ready", "start", "begin", "go"],
+                        practice: "Type 'ready' to begin the mission",
+                        attempts: 0,
+                        progressiveHints: [
+                            "Just type 'ready' to start!",
+                            "Type the word 'ready' and press Enter",
+                            "The command is simply: ready"
+                        ]
+                    },
+                    {
+                        hint: "First, let's check if the cafe's server is running and accessible. We'll need to verify both the server and the local menu service.\n\nWhat command would you use to check if the server is reachable?",
+                        command: "ping cat-cafe-server",
+                        validCommands: [
+                            "ping cat-cafe-server",
+                            "ping 192.168.3.100",
+                            "ping -c 4 cat-cafe-server",
+                            "ping -c 4 192.168.3.100",
+                            "ping -n 4 cat-cafe-server",
+                            "ping -n 4 192.168.3.100"
+                        ],
+                        practice: "Try to ping the cafe server...",
+                        attempts: 0,
+                        progressiveHints: [
+                            "What command would you use to check if the coffee shop server (cat-cafe-server, 192.168.3.100) is reachable?",
+                            "The command starts with 'p' and is used to test network connectivity",
+                            "Try using the 'ping' command with the server name or IP"
+                        ]
+                    },
+                    {
+                        hint: "Now we need to check if the local menu server is running. We can use 'curl' to test this.\n\nWhat command would you use to check if the menu server is running?",
+                        command: "ssh barista@cat-cafe-server 'curl -I localhost:3000'",
+                        validCommands: [
+                            "ssh barista@cat-cafe-server 'curl -I localhost:3000'",
+                            "ssh barista@192.168.3.100 'curl -I localhost:3000'",
+                            "ssh barista@cat-cafe-server 'curl --head localhost:3000'",
+                            "ssh barista@192.168.3.100 'curl --head localhost:3000'",
+                            "ssh barista@cat-cafe-server 'curl -I http://localhost:3000'",
+                            "ssh barista@192.168.3.100 'curl -I http://localhost:3000'",
+                            "ssh barista@cat-cafe-server 'curl --head http://localhost:3000'",
+                            "ssh barista@192.168.3.100 'curl --head http://localhost:3000'"
+                        ],
+                        practice: "Try to check the menu server...",
+                        attempts: 0,
+                        progressiveHints: [
+                            "We need to run a command on the remote server",
+                            "Use SSH to execute a command remotely",
+                            "Try using 'curl' to check the local server"
+                        ]
+                    },
+                    {
+                        hint: "Perfect! Now we need to create a reverse tunnel to expose the local menu server to the internet.\n\nThink about it:\n- We need to forward a remote port to the local server\n- The menu server is running on port 3000\n- We'll use port 8080 on the remote server\n- We need to connect through the cafe server\n\nCan you figure out the SSH command to create this reverse tunnel?",
+                        command: "ssh -R 8080:localhost:3000 barista@cat-cafe-server",
+                        validCommands: [
+                            "ssh -R 8080:localhost:3000 barista@cat-cafe-server",
+                            "ssh -R8080:localhost:3000 barista@cat-cafe-server",
+                            "ssh -R 8080:localhost:3000 barista@192.168.3.100",
+                            "ssh -R8080:localhost:3000 barista@192.168.3.100",
+                            "ssh barista@cat-cafe-server -R 8080:localhost:3000",
+                            "ssh barista@192.168.3.100 -R 8080:localhost:3000",
+                            "ssh barista@cat-cafe-server -R8080:localhost:3000",
+                            "ssh barista@192.168.3.100 -R8080:localhost:3000",
+                            "ssh -R 8080:http://localhost:3000 barista@cat-cafe-server",
+                            "ssh -R8080:http://localhost:3000 barista@cat-cafe-server",
+                            "ssh -R 8080:http://localhost:3000 barista@192.168.3.100",
+                            "ssh -R8080:http://localhost:3000 barista@192.168.3.100"
+                        ],
+                        practice: "Try to construct the reverse SSH tunnel command...",
+                        attempts: 0,
+                        progressiveHints: [
+                            "Start with 'ssh -R' to create a remote port forward",
+                            "Add the remote port (8080) and the local target (localhost:3000)",
+                            "Finally, add your login credentials (barista@cat-cafe-server)"
+                        ]
+                    }
+                ],
+                currentStep: 0
+            },
+            "hospital-paywall": {
+                title: "Hospital Paywall Hack",
+                description: "Implement SOCKS proxy with ssh -D",
+                reward: 5000,
+                steps: [
+                    {
+                        hint: "Welcome to the Hospital Paywall Hack mission! The hospital has implemented a paywall for their research database, but you need to access it for a critical medical case.\n\nServer Details:\n- Name: hospital-server\n- IP: 192.168.4.100\n- Username: doctor\n- Research Database: research.hospital.local:443",
+                        command: "ready",
+                        validCommands: ["ready", "start", "begin", "go"],
+                        practice: "Type 'ready' to begin the mission",
+                        attempts: 0,
+                        progressiveHints: [
+                            "Just type 'ready' to start!",
+                            "Type the word 'ready' and press Enter",
+                            "The command is simply: ready"
+                        ]
+                    },
+                    {
+                        hint: "First, let's verify we can reach the hospital's server. We need to be extra careful as this is a critical system.\n\nWhat command would you use to check if the server is reachable?",
+                        command: "ping hospital-server",
+                        validCommands: [
+                            "ping hospital-server",
+                            "ping 192.168.4.100",
+                            "ping -c 4 hospital-server",
+                            "ping -c 4 192.168.4.100",
+                            "ping -n 4 hospital-server",
+                            "ping -n 4 192.168.4.100"
+                        ],
+                        practice: "Try to ping the hospital server...",
+                        attempts: 0,
+                        progressiveHints: [
+                            "What command would you use to check if the coffee shop server (hospital-server, 192.168.4.100) is reachable?",
+                            "The command starts with 'p' and is used to test network connectivity",
+                            "Try using the 'ping' command with the server name or IP"
+                        ]
+                    },
+                    {
+                        hint: "Now we need to check if the research database is accessible from the hospital server. Since it's using HTTPS (port 443), we'll need to use a secure connection.\n\nWhat command would you use to check if the database is reachable?",
+                        command: "ssh doctor@hospital-server 'curl -I https://research.hospital.local'",
+                        validCommands: [
+                            "ssh doctor@hospital-server 'curl -I https://research.hospital.local'",
+                            "ssh doctor@192.168.4.100 'curl -I https://research.hospital.local'",
+                            "ssh doctor@hospital-server 'curl --head https://research.hospital.local'",
+                            "ssh doctor@192.168.4.100 'curl --head https://research.hospital.local'",
+                            "ssh doctor@hospital-server 'curl -I -k https://research.hospital.local'",
+                            "ssh doctor@192.168.4.100 'curl -I -k https://research.hospital.local'",
+                            "ssh doctor@hospital-server 'curl --head -k https://research.hospital.local'",
+                            "ssh doctor@192.168.4.100 'curl --head -k https://research.hospital.local'"
+                        ],
+                        practice: "Try to check the database accessibility...",
+                        attempts: 0,
+                        progressiveHints: [
+                            "We need to run a command on the remote server",
+                            "Use SSH to execute a command remotely",
+                            "Try using 'curl' with HTTPS to check the database"
+                        ]
+                    },
+                    {
+                        hint: "Perfect! Now we need to create a SOCKS proxy to bypass the paywall. This is different from our previous tunnels because it will handle all types of traffic.\n\nThink about it:\n- We need to create a dynamic port forward (-D)\n- We'll use port 1080 locally (standard SOCKS port)\n- We need to connect through the hospital server\n- The proxy will handle all traffic types (HTTP, HTTPS, etc.)\n\nCan you figure out the SSH command to create this SOCKS proxy?",
+                        command: "ssh -D 1080 doctor@hospital-server",
+                        validCommands: [
+                            "ssh -D 1080 doctor@hospital-server",
+                            "ssh -D1080 doctor@hospital-server",
+                            "ssh -D 1080 doctor@192.168.4.100",
+                            "ssh -D1080 doctor@192.168.4.100",
+                            "ssh doctor@hospital-server -D 1080",
+                            "ssh doctor@192.168.4.100 -D 1080",
+                            "ssh doctor@hospital-server -D1080",
+                            "ssh doctor@192.168.4.100 -D1080"
+                        ],
+                        practice: "Try to construct the SSH SOCKS proxy command...",
+                        attempts: 0,
+                        progressiveHints: [
+                            "Start with 'ssh -D' to create a dynamic port forward",
+                            "Add your local port (1080)",
+                            "Finally, add your login credentials (doctor@hospital-server)"
+                        ]
+                    },
+                    {
+                        hint: "Great! Now that we have our SOCKS proxy running, we need to configure our browser to use it. This will route all our traffic through the hospital's network.\n\nWhat command would you use to verify the proxy is working?",
+                        command: "curl --socks5 127.0.0.1:1080 https://research.hospital.local",
+                        validCommands: [
+                            "curl --socks5 127.0.0.1:1080 https://research.hospital.local",
+                            "curl --socks5 localhost:1080 https://research.hospital.local",
+                            "curl -x socks5://127.0.0.1:1080 https://research.hospital.local",
+                            "curl -x socks5://localhost:1080 https://research.hospital.local",
+                            "curl --socks5-hostname 127.0.0.1:1080 https://research.hospital.local",
+                            "curl --socks5-hostname localhost:1080 https://research.hospital.local"
+                        ],
+                        practice: "Try to test the SOCKS proxy connection...",
+                        attempts: 0,
+                        progressiveHints: [
+                            "We need to use curl with SOCKS5 proxy settings",
+                            "The proxy is running on localhost port 1080",
+                            "Try using 'curl' with the --socks5 flag"
+                        ]
+                    }
+                ],
+                currentStep: 0
+            },
+            "bank-mainframe": {
+                title: "Bank Mainframe Infiltration",
+                description: "Advanced tunneling with custom exploit chain",
+                reward: 10000,
+                steps: [
+                    {
+                        hint: "Welcome to the final challenge! The bank's mainframe is hidden behind multiple layers of security. You'll need to chain SSH tunnels and use advanced techniques to reach it.\n\nFirst, let's start with reconnaissance.\n\nServer Details:\n- Jump Host: jump.bank.net (10.10.10.10)\n- Internal Host: core.bank.local (10.10.20.20)\n- Mainframe: mainframe.bank.local (10.10.30.30)\n- Username: elite\n- SSH Port: 2222 (hidden)\n\nType 'ready' to begin.",
+                        command: "ready",
+                        validCommands: ["ready", "start", "begin", "go"],
+                        practice: "Type 'ready' to begin the mission",
+                        attempts: 0,
+                        progressiveHints: [
+                            "Just type 'ready' to start!",
+                            "Type the word 'ready' and press Enter",
+                            "The command is simply: ready"
+                        ]
+                    },
+                    {
+                        hint: "First, scan the jump host for open ports.\n\nWhat command would you use to scan for SSH on a non-standard port?",
+                        command: "nmap -p 2222 jump.bank.net",
+                        validCommands: [
+                            "nmap -p 2222 jump.bank.net",
+                            "nmap jump.bank.net -p 2222",
+                            "nmap -p2222 jump.bank.net",
+                            "nmap 10.10.10.10 -p 2222",
+                            "nmap -p 2222 10.10.10.10",
+                            "nmap -p2222 10.10.10.10"
+                        ],
+                        practice: "Scan the jump host for SSH on port 2222...",
+                        attempts: 0,
+                        progressiveHints: [
+                            "Use nmap to scan for open ports.",
+                            "The SSH port is not the default (22).",
+                            "Try scanning port 2222 on jump.bank.net."
+                        ]
+                    },
+                    {
+                        hint: "Now, establish a tunnel from your machine to the internal host via the jump host.\n\nYou need to forward local port 2222 to core.bank.local:2222 through jump.bank.net.\n\nWhat SSH command would you use?",
+                        command: "ssh -L 2222:core.bank.local:2222 elite@jump.bank.net -p 2222",
+                        validCommands: [
+                            "ssh -L 2222:core.bank.local:2222 elite@jump.bank.net -p 2222",
+                            "ssh -L2222:core.bank.local:2222 elite@jump.bank.net -p 2222",
+                            "ssh elite@jump.bank.net -L 2222:core.bank.local:2222 -p 2222",
+                            "ssh elite@jump.bank.net -L2222:core.bank.local:2222 -p 2222",
+                            "ssh -p 2222 -L 2222:core.bank.local:2222 elite@jump.bank.net",
+                            "ssh -p2222 -L 2222:core.bank.local:2222 elite@jump.bank.net"
+                        ],
+                        practice: "Create a local tunnel to the internal host via the jump host...",
+                        attempts: 0,
+                        progressiveHints: [
+                            "Use ssh -L for local port forwarding.",
+                            "The jump host uses port 2222.",
+                            "Forward local port 2222 to core.bank.local:2222."
+                        ]
+                    },
+                    {
+                        hint: "Now, use your new tunnel to connect to the internal host.\n\nWhat SSH command would you use to connect to core.bank.local through your local tunnel?",
+                        command: "ssh elite@localhost -p 2222",
+                        validCommands: [
+                            "ssh elite@localhost -p 2222",
+                            "ssh -p 2222 elite@localhost",
+                            "ssh elite@127.0.0.1 -p 2222",
+                            "ssh -p2222 elite@localhost",
+                            "ssh -p2222 elite@127.0.0.1"
+                        ],
+                        practice: "Connect to the internal host through your local tunnel...",
+                        attempts: 0,
+                        progressiveHints: [
+                            "Use ssh to connect to localhost on port 2222.",
+                            "The username is elite.",
+                            "Try ssh elite@localhost -p 2222."
+                        ]
+                    },
+                    {
+                        hint: "Final step! Set up a dynamic SOCKS proxy through the internal host to reach the mainframe.\n\nWhat SSH command would you use to create a SOCKS proxy on port 1080 via core.bank.local?",
+                        command: "ssh -D 1080 elite@mainframe.bank.local -p 2222",
+                        validCommands: [
+                            "ssh -D 1080 elite@mainframe.bank.local -p 2222",
+                            "ssh -D1080 elite@mainframe.bank.local -p 2222",
+                            "ssh elite@mainframe.bank.local -D 1080 -p 2222",
+                            "ssh elite@mainframe.bank.local -D1080 -p 2222",
+                            "ssh -p 2222 -D 1080 elite@mainframe.bank.local",
+                            "ssh -p2222 -D 1080 elite@mainframe.bank.local"
+                        ],
+                        practice: "Create a SOCKS proxy to the mainframe...",
+                        attempts: 0,
+                        progressiveHints: [
+                            "Use ssh -D for dynamic port forwarding.",
+                            "The mainframe uses port 2222.",
+                            "Create a SOCKS proxy on port 1080."
+                        ]
+                    }
+                ],
+                currentStep: 0
+            }
+        };
+
+        // Save game state to localStorage
+        function saveGameState() {
+            const gameData = {
+                alias: gameState.alias,
+                level: gameState.level,
+                credits: gameState.credits,
+                completedMissions: gameState.completedMissions,
+                unlockedPhases: gameState.unlockedPhases,
+                completedMissionsList: gameState.completedMissionsList,
+                lastSaved: new Date().toISOString()
+            };
+            localStorage.setItem('sshTunnelTycoon', JSON.stringify(gameData));
+        }
+
+        // Load game state from localStorage
+        function loadGameState() {
+            const savedGame = localStorage.getItem('sshTunnelTycoon');
+            if (savedGame) {
+                const gameData = JSON.parse(savedGame);
+                gameState = {
+                    ...gameState,
+                    ...gameData,
+                    currentMission: null // Reset current mission on load
+                };
+                return true;
+            }
+            return false;
+        }
+
+        // Initialize game
+        function initGame() {
+            console.log('Initializing game...');
+            const hasSavedGame = loadGameState();
+            
+            if (!hasSavedGame) {
+                const alias = prompt('Enter your hacker alias:');
+                if (alias) {
+                    gameState.alias = alias;
+                    gameState.unlockedPhases = ['tutorial'];
+                    saveGameState();
+                }
+            }
+            
+            // Ensure tutorial mission is always available
+            if (!gameState.unlockedPhases.includes('tutorial')) {
+                gameState.unlockedPhases.push('tutorial');
+            }
+
+            // --- Phase unlocks on reload ---
+            const phase2Missions = ['library-firewall', 'cat-cafe'];
+            const phase2Completed = phase2Missions.every(missionId => gameState.completedMissionsList.includes(missionId));
+            if (phase2Completed && !gameState.unlockedPhases.includes('mid-career')) {
+                gameState.unlockedPhases.push('mid-career');
+                console.log('Phase 3 unlocked on reload');
+            }
+            const phase3Missions = ['hospital-paywall'];
+            const phase3Completed = phase3Missions.every(missionId => gameState.completedMissionsList.includes(missionId));
+            if (phase3Completed && !gameState.unlockedPhases.includes('elite-hacker')) {
+                gameState.unlockedPhases.push('elite-hacker');
+                console.log('Phase 4 unlocked on reload');
+            }
+            // --- End phase unlocks on reload ---
+
+            // Initialize mission elements
+            document.querySelectorAll('.mission').forEach(mission => {
+                const missionId = mission.getAttribute('data-mission-id');
+                if (missionId) {
+                    mission.onclick = () => startMission(missionId);
+                    console.log('Initialized mission:', missionId);
+                }
+            });
+            
+            updateStats();
+            updateMissionStatus();
+            console.log('Game initialized with state:', gameState);
+        }
+
+        // Update player stats display
+        function updateStats() {
+            document.getElementById('player-alias').textContent = gameState.alias;
+            document.getElementById('player-level').textContent = gameState.level;
+            document.getElementById('player-credits').textContent = gameState.credits;
+            document.getElementById('missions-completed').textContent = gameState.completedMissions;
+            saveGameState(); // Save after stats update
+        }
+
+        // Update mission status display
+        function updateMissionStatus() {
+            console.log('Updating mission status...');
+            console.log('Current game state:', {
+                completedMissions: gameState.completedMissionsList,
+                unlockedPhases: gameState.unlockedPhases
+            });
+
+            // Robust mission-to-phase mapping
+            const missionPhaseMap = {
+                'tutorial': 'tutorial',
+                'library-firewall': 'early-career',
+                'cat-cafe': 'early-career',
+                'hospital-paywall': 'mid-career',
+                'bank-mainframe': 'elite-hacker'
+            };
+
+            document.querySelectorAll('.mission').forEach(mission => {
+                const missionId = mission.getAttribute('data-mission-id');
+                if (!missionId) return;
+
+                // Always unlock if completed
+                if (gameState.completedMissionsList.includes(missionId)) {
+                    console.log(`[MISSION STATUS] ${missionId}: completed`);
+                    mission.classList.add('completed');
+                    mission.classList.remove('locked', 'unlocked');
+                    return;
+                }
+
+                // Unlock if phase is unlocked
+                const phase = missionPhaseMap[missionId];
+                const phaseUnlocked = phase && gameState.unlockedPhases.includes(phase);
+                console.log(`[MISSION STATUS] ${missionId}: phase=${phase}, phaseUnlocked=${phaseUnlocked}`);
+                if (phaseUnlocked) {
+                    console.log(`[MISSION STATUS] ${missionId} is being unlocked (phase: ${phase})`);
+                    mission.classList.remove('locked');
+                    mission.classList.add('unlocked');
+                } else {
+                    console.log(`[MISSION STATUS] ${missionId} remains locked (phase: ${phase})`);
+                    mission.classList.add('locked');
+                    mission.classList.remove('unlocked', 'completed');
+                }
+            });
+
+            // Update phase headers
+            document.querySelectorAll('.phase').forEach(phase => {
+                const phaseTitle = phase.querySelector('h3');
+                if (phaseTitle) {
+                    const phaseNumber = phaseTitle.textContent.split(':')[0].trim();
+                    const missionsInPhase = Array.from(phase.querySelectorAll('.mission'))
+                        .filter(m => m.getAttribute('data-mission-id'));
+                    const completedMissions = missionsInPhase.filter(m => 
+                        gameState.completedMissionsList.includes(m.getAttribute('data-mission-id'))
+                    ).length;
+                    if (completedMissions > 0) {
+                        phaseTitle.innerHTML = `${phaseNumber}: ${completedMissions}/${missionsInPhase.length} Completed`;
+                    }
+                }
+            });
+        }
+
+        // Show confetti animation
+        function showConfetti() {
+            const duration = 3 * 1000;
+            const animationEnd = Date.now() + duration;
+            const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+            function randomInRange(min, max) {
+                return Math.random() * (max - min) + min;
+            }
+
+            const interval = setInterval(function() {
+                const timeLeft = animationEnd - Date.now();
+
+                if (timeLeft <= 0) {
+                    return clearInterval(interval);
+                }
+
+                const particleCount = 50 * (timeLeft / duration);
+                
+                // Green confetti
+                confetti({
+                    ...defaults,
+                    particleCount,
+                    origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
+                    colors: ['#00ff00', '#00cc00', '#009900']
+                });
+                confetti({
+                    ...defaults,
+                    particleCount,
+                    origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
+                    colors: ['#00ff00', '#00cc00', '#009900']
+                });
+            }, 250);
+        }
+
+        // Start mission
+        function startMission(missionId) {
+            console.log('Starting mission:', missionId); // Debug log
+            if (gameState.unlockedPhases.includes(missionId) || 
+                missionId === 'tutorial' || 
+                (gameState.unlockedPhases.includes('early-career') && 
+                 (missionId === 'library-firewall' || missionId === 'cat-cafe')) ||
+                (gameState.unlockedPhases.includes('mid-career') && 
+                 missionId === 'hospital-paywall')) {
+                console.log('Mission is unlocked'); // Debug log
+                gameState.currentMission = missionId;
+                const mission = missions[missionId];
+                if (mission) {
+                    console.log('Mission data found:', mission.title); // Debug log
+                    mission.currentStep = 0;
+                    
+                    const missionDialog = document.getElementById('mission-dialog');
+                    const missionTitle = document.getElementById('mission-title');
+                    const missionInput = document.getElementById('mission-input');
+                    
+                    if (missionDialog && missionTitle && missionInput) {
+                        missionTitle.textContent = `Mission: ${mission.title}`;
+                        updateMissionStep();
+                        
+                        missionDialog.style.display = 'block';
+                        missionInput.focus();
+
+                        // Remove any existing event listeners
+                        missionInput.removeEventListener('keypress', handleCommand);
+                        // Add event listener for Enter key
+                        missionInput.addEventListener('keypress', handleCommand);
+                        
+                        console.log('Mission dialog initialized'); // Debug log
+                    } else {
+                        console.error('Mission dialog elements not found'); // Debug log
+                    }
+                } else {
+                    console.error('Mission data not found for:', missionId); // Debug log
+                }
+            } else {
+                console.log('Mission is locked:', missionId); // Debug log
+            }
+        }
+
+        // Update mission step
+        function updateMissionStep() {
+            const mission = missions[gameState.currentMission];
+            if (!mission) {
+                console.error('No current mission found'); // Debug log
+                return;
+            }
+            
+            const step = mission.steps[mission.currentStep];
+            if (!step) {
+                console.error('No step found for current mission'); // Debug log
+                return;
+            }
+            
+            const missionHint = document.getElementById('mission-hint');
+            const missionOutput = document.getElementById('mission-output');
+            const missionInput = document.getElementById('mission-input');
+            
+            if (missionHint && missionOutput && missionInput) {
+                missionHint.innerHTML = `
+                    <p>${step.hint}</p>
+                    ${step.practice ? `<p class="practice-hint">${step.practice}</p>` : ''}
+                    <button class="hint-button" onclick="showHint(${mission.currentStep})">Need a hint?</button>
+                    <div id="interactive-hints-${mission.currentStep}" class="interactive-hint"></div>
+                `;
+                missionOutput.innerHTML = '';
+                missionInput.textContent = '';
+                
+                console.log('Mission step updated:', mission.currentStep); // Debug log
+            } else {
+                console.error('Mission step elements not found'); // Debug log
+            }
+        }
+
+        // Show hint based on attempts
+        function showHint(stepIndex) {
+            const mission = missions[gameState.currentMission];
+            const step = mission.steps[stepIndex];
+            const hintElement = document.getElementById(`interactive-hints-${stepIndex}`);
+            
+            if (step.attempts < step.progressiveHints.length) {
+                hintElement.style.display = 'block';
+                hintElement.innerHTML = `
+                    <p>${step.progressiveHints[step.attempts]}</p>
+                    <p class="command-history">Previous attempts: ${step.attempts}</p>
+                `;
+            }
+        }
+
+        // Handle command input
+        function handleCommand(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                const command = document.getElementById('mission-input').textContent.trim();
+                const output = document.getElementById('mission-output');
+                const mission = missions[gameState.currentMission];
+                const currentStep = mission.steps[mission.currentStep];
+                
+                // Add command to output
+                output.innerHTML += `<div class="command">$ ${command}</div>`;
+                
+                if (currentStep.command) {
+                    // Check if command is correct
+                    const isValidCommand = currentStep.validCommands ? 
+                        currentStep.validCommands.includes(command) : 
+                        command === currentStep.command;
+
+                    if (isValidCommand) {
+                        let successMessage = "";
+                        switch(mission.currentStep) {
+                            case 0:
+                                successMessage = "Great! Let's start building your tunnel!";
+                                break;
+                            case 1:
+                                successMessage = "Server is reachable! The passage is open.";
+                                break;
+                            case 2:
+                                successMessage = "Port 22 is open! SSH is available on the server.";
+                                break;
+                            case 3:
+                                successMessage = "SSH is ready! You have the tools to build your tunnel.";
+                                break;
+                            case 4:
+                                successMessage = "Success! Your tunnel is complete. You can now access the blocked website through localhost:8080";
+                                break;
+                        }
+                        output.innerHTML += `<div class="success">${successMessage}</div>`;
+                        
+                        // Move to next step or complete mission
+                        mission.currentStep++;
+                        if (mission.currentStep < mission.steps.length) {
+                            updateMissionStep();
+                        } else {
+                            output.innerHTML += `<div class="success">Mission completed! You earned $${mission.reward}</div>`;
+                            
+                            // Update game state
+                            gameState.credits += mission.reward;
+                            gameState.completedMissions++;
+                            gameState.completedMissionsList.push(gameState.currentMission);
+                            updateStats();
+                            
+                            // Show confetti
+                            showConfetti();
+                            
+                            // Debug logging for mission completion
+                            console.log('Mission completed:', gameState.currentMission);
+                            console.log('Completed missions list:', gameState.completedMissionsList);
+                            
+                            // Check for phase unlocks
+                            if (gameState.currentMission === 'tutorial') {
+                                if (!gameState.unlockedPhases.includes('early-career')) {
+                                    gameState.unlockedPhases.push('early-career');
+                                    output.innerHTML += `<div class="success">Phase 2 missions unlocked! Your career begins...</div>`;
+                                    console.log('Phase 2 unlocked');
+                                }
+                            } else {
+                                // Check Phase 2 completion
+                                const phase2Missions = ['library-firewall', 'cat-cafe'];
+                                const phase2Completed = phase2Missions.every(missionId => {
+                                    const isCompleted = gameState.completedMissionsList.includes(missionId);
+                                    console.log(`Checking Phase 2 mission ${missionId}: ${isCompleted}`);
+                                    return isCompleted;
+                                });
+                                
+                                console.log('Phase 2 completed:', phase2Completed);
+                                
+                                if (phase2Completed && !gameState.unlockedPhases.includes('mid-career')) {
+                                    console.log('Unlocking Phase 3...');
+                                    gameState.unlockedPhases.push('mid-career');
+                                    output.innerHTML += `<div class="success">Phase 3 missions unlocked! New challenges await...</div>`;
+                                }
+                                
+                                // Check Phase 3 completion
+                                const phase3Missions = ['hospital-paywall'];
+                                const phase3Completed = phase3Missions.every(missionId => {
+                                    const isCompleted = gameState.completedMissionsList.includes(missionId);
+                                    console.log(`Checking Phase 3 mission ${missionId}: ${isCompleted}`);
+                                    return isCompleted;
+                                });
+                                
+                                console.log('Phase 3 completed:', phase3Completed);
+                                
+                                if (phase3Completed && !gameState.unlockedPhases.includes('elite-hacker')) {
+                                    console.log('Unlocking Phase 4...');
+                                    gameState.unlockedPhases.push('elite-hacker');
+                                    output.innerHTML += `<div class="success">Phase 4 missions unlocked! You're reaching elite status...</div>`;
+                                }
+                            }
+                            
+                            // Update mission status
+                            updateMissionStatus();
+                            saveGameState();
+                            
+                            // Close mission after delay
+                            setTimeout(closeMission, 3000);
+                        }
+                    } else {
+                        // Handle special commands
+                        if (command === 'help') {
+                            output.innerHTML += `<div class="info">Available commands: help, man [command], [command] --help</div>`;
+                        } else if (command.startsWith('man ')) {
+                            output.innerHTML += `<div class="info">Showing manual for ${command.split(' ')[1]}...</div>`;
+                        } else if (command === currentStep.command.split(' ')[0]) {
+                            output.innerHTML += `<div class="info">Try adding more parameters to the command...</div>`;
+                        } else {
+                            currentStep.attempts++;
+                            let errorMessage = "Not quite right. ";
+                            switch(mission.currentStep) {
+                                case 0:
+                                    errorMessage += "Type 'ready' to begin.";
+                                    break;
+                                case 1:
+                                    errorMessage += "Try to ping the server 'coffee-shop' or its IP address 192.168.1.100...";
+                                    break;
+                                case 2:
+                                    errorMessage += "Try to scan port 22 on the server. You can use either the server name or IP address.";
+                                    break;
+                                case 3:
+                                    errorMessage += "Try to find the command that shows your SSH version. Common flags are -V or --version.";
+                                    break;
+                                case 4:
+                                    errorMessage += "Remember: you need to specify your local port, the target address, the target port, and your login credentials.";
+                                    break;
+                            }
+                            output.innerHTML += `<div class="error">${errorMessage}</div>`;
+                            
+                            // Show progressive hint if available
+                            if (currentStep.attempts <= currentStep.progressiveHints.length) {
+                                showHint(mission.currentStep);
+                            }
+                        }
+                    }
+                }
+                
+                // Clear input
+                document.getElementById('mission-input').textContent = '';
+                
+                // Scroll to bottom
+                output.scrollTop = output.scrollHeight;
+            }
+        }
+
+        // Close mission dialog
+        function closeMission() {
+            document.getElementById('mission-dialog').style.display = 'none';
+            document.getElementById('mission-input').removeEventListener('keypress', handleCommand);
+        }
+
+        // Add auto-save functionality
+        function autoSave() {
+            saveGameState();
+            console.log('Game progress auto-saved');
+        }
+
+        // Auto-save every 5 minutes
+        setInterval(autoSave, 5 * 60 * 1000);
+
+        // Add save indicator
+        function showSaveIndicator() {
+            const saveIndicator = document.createElement('div');
+            saveIndicator.id = 'save-indicator';
+            saveIndicator.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background: rgba(0, 255, 0, 0.2);
+                color: #00ff00;
+                padding: 10px;
+                border-radius: 5px;
+                font-family: 'Share Tech Mono', monospace;
+                display: none;
+                z-index: 1000;
+            `;
+            document.body.appendChild(saveIndicator);
+        }
+
+        // Show save indicator briefly
+        function flashSaveIndicator() {
+            const indicator = document.getElementById('save-indicator');
+            if (indicator) {
+                indicator.textContent = 'Progress saved';
+                indicator.style.display = 'block';
+                setTimeout(() => {
+                    indicator.style.display = 'none';
+                }, 2000);
+            }
+        }
+
+        // Override saveGameState to show indicator
+        const originalSaveGameState = saveGameState;
+        saveGameState = function() {
+            originalSaveGameState();
+            flashSaveIndicator();
+        };
+
+        // Initialize save indicator
+        showSaveIndicator();
+
+        // Add reset game functionality
+        function resetGame() {
+            if (confirm('Are you sure you want to reset your progress? This cannot be undone.')) {
+                localStorage.removeItem('sshTunnelTycoon');
+                location.reload();
+            }
+        }
+
+        // Add reset button to stats panel
+        document.querySelector('.stats-panel').innerHTML += `
+            <button onclick="resetGame()" style="
+                background: none;
+                border: 1px solid #ff0000;
+                color: #ff0000;
+                padding: 0.5rem 1rem;
+                margin-top: 1rem;
+                cursor: pointer;
+                font-family: 'Share Tech Mono', monospace;
+            ">Reset Progress</button>
+        `;
+
+        // Initialize game when page loads
+        window.onload = initGame;
+    </script>
+</body>
+</html> 

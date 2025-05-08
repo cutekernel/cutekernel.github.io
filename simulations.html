@@ -18,6 +18,32 @@
             margin: 0 auto;
         }
 
+        .simulation-card {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #00ff00;
+            border-radius: 5px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .simulation-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 255, 0, 0.2);
+        }
+
+        .simulation-card h3 {
+            margin-top: 0;
+            color: #00ff00;
+        }
+
+        .simulation-card p {
+            margin-bottom: 0;
+            opacity: 0.8;
+        }
+
         @media (max-width: 768px) {
             .simulations-grid {
                 grid-template-columns: 1fr;
@@ -38,12 +64,16 @@
                     <a href="tools.html" class="nav-link">[tools]</a>
                 </div>
                 <div class="terminal-content">
-                    <p class="typing">No simulations available...</p>
+                    <p class="typing">Loading available simulations...</p>
                 </div>
             </div>
         </header>
         <main>
             <div class="simulations-grid">
+                <a href="ssh-tunnel-tycoon.html" class="simulation-card">
+                    <h3>SSH Tunnel Tycoon</h3>
+                    <p>Master the art of SSH tunneling through an immersive career progression game. From rookie to elite pentester, complete missions and earn your reputation in the cyber underground.</p>
+                </a>
             </div>
         </main>
         <footer>
