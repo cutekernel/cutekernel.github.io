@@ -817,6 +817,14 @@
             return false;
         }
 
+        // Map phase to player level
+        function getPlayerLevel(unlockedPhases) {
+            if (unlockedPhases.includes('elite-hacker')) return 'Elite';
+            if (unlockedPhases.includes('mid-career')) return 'Pro';
+            if (unlockedPhases.includes('early-career')) return 'Freelancer';
+            return 'Rookie';
+        }
+
         // Initialize game
         function initGame() {
             console.log('Initializing game...');
@@ -851,6 +859,9 @@
             }
             // --- End phase unlocks on reload ---
 
+            // Set level on load
+            gameState.level = getPlayerLevel(gameState.unlockedPhases);
+
             // Initialize mission elements
             document.querySelectorAll('.mission').forEach(mission => {
                 const missionId = mission.getAttribute('data-mission-id');
@@ -867,6 +878,8 @@
 
         // Update player stats display
         function updateStats() {
+            // Update level based on unlocked phases
+            gameState.level = getPlayerLevel(gameState.unlockedPhases);
             document.getElementById('player-alias').textContent = gameState.alias;
             document.getElementById('player-level').textContent = gameState.level;
             document.getElementById('player-credits').textContent = gameState.credits;
@@ -1127,7 +1140,7 @@
                                 if (!gameState.unlockedPhases.includes('early-career')) {
                                     gameState.unlockedPhases.push('early-career');
                                     output.innerHTML += `<div class="success">Phase 2 missions unlocked! Your career begins...</div>`;
-                                    console.log('Phase 2 unlocked');
+                                    updateStats();
                                 }
                             } else {
                                 // Check Phase 2 completion
@@ -1144,6 +1157,7 @@
                                     console.log('Unlocking Phase 3...');
                                     gameState.unlockedPhases.push('mid-career');
                                     output.innerHTML += `<div class="success">Phase 3 missions unlocked! New challenges await...</div>`;
+                                    updateStats();
                                 }
                                 
                                 // Check Phase 3 completion
@@ -1160,6 +1174,7 @@
                                     console.log('Unlocking Phase 4...');
                                     gameState.unlockedPhases.push('elite-hacker');
                                     output.innerHTML += `<div class="success">Phase 4 missions unlocked! You're reaching elite status...</div>`;
+                                    updateStats();
                                 }
                             }
                             
